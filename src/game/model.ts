@@ -156,6 +156,21 @@ export function runnerHitbox(runner: Runner): {
   };
 }
 
+export function obstacleHitbox(obstacle: Obstacle): {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+} {
+  const inset = obstacleHitboxInsets[obstacle.kind];
+  return {
+    x: obstacle.x + inset.left,
+    y: obstacle.y + inset.top,
+    width: obstacle.width - inset.left - inset.right,
+    height: obstacle.height - inset.top - inset.bottom,
+  };
+}
+
 export function rectsOverlap(
   a: { x: number; y: number; width: number; height: number },
   b: { x: number; y: number; width: number; height: number },
@@ -302,7 +317,7 @@ function checkCollisions(state: GameState): void {
   const hitbox = runnerHitbox(state.runner);
 
   for (const obstacle of state.obstacles) {
-    if (rectsOverlap(hitbox, obstacle)) {
+    if (rectsOverlap(hitbox, obstacleHitbox(obstacle))) {
       endGame(state);
       return;
     }
@@ -348,3 +363,12 @@ function removeOffscreen(
 function clamp(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));
 }
+
+const obstacleHitboxInsets: Record<
+  Obstacle["kind"],
+  { top: number; right: number; bottom: number; left: number }
+> = {
+  goatbox: { top: 16, right: 18, bottom: 16, left: 18 },
+  slurpSlurp: { top: 12, right: 14, bottom: 10, left: 14 },
+  frank: { top: 10, right: 14, bottom: 10, left: 14 },
+};

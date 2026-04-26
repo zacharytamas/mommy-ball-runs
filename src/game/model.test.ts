@@ -3,6 +3,7 @@ import {
   circleRectOverlap,
   createGameState,
   type GameState,
+  obstacleHitbox,
   rectsOverlap,
   resetGame,
   updateGame,
@@ -107,6 +108,49 @@ describe("runner model", () => {
 
     expect(state.mode).toBe("gameOver");
     expect(state.best).toBeGreaterThanOrEqual(state.score);
+  });
+
+  it("forgives transparent sprite padding around obstacles", () => {
+    const goatbox = obstacleHitbox({
+      x: 300,
+      y: world.groundY - 108,
+      width: 84,
+      height: 108,
+      kind: "goatbox",
+      passed: false,
+    });
+    const frank = obstacleHitbox({
+      x: 300,
+      y: world.groundY - 142,
+      width: 66,
+      height: 46,
+      kind: "frank",
+      passed: false,
+    });
+
+    expect(goatbox.x).toBe(318);
+    expect(goatbox.width).toBe(48);
+    expect(goatbox.height).toBe(76);
+    expect(frank.x).toBe(314);
+    expect(frank.width).toBe(38);
+    expect(frank.height).toBe(26);
+  });
+
+  it("does not end the run for a near miss inside obstacle sprite padding", () => {
+    const state = runningState();
+    state.score = 400;
+    state.obstacles.push({
+      x: state.runner.x + 58,
+      y: state.runner.y + 10,
+      width: 66,
+      height: 52,
+      kind: "slurpSlurp",
+      passed: false,
+    });
+
+    updateGame(state, 0.016, { horizontal: 0, jumpPressed: false, ducking: false }, () => 0.5);
+
+    expect(state.mode).toBe("running");
   });
 });
 
