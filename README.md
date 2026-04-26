@@ -2,7 +2,7 @@
 
 A silly browser-based TypeScript infinite runner set in Ballseat Town, an extremely serious literary universe created by children.
 
-Mommy Ball runs along the train tracks, collects tickets, and dodges canon-accurate trouble from Goatbox, Slurp Slurp, and Frank.
+Mommy Ball runs through the Ballseat Town foreground, collects tickets, and dodges canon-accurate trouble from Goatbox, Slurp Slurp, and Frank.
 
 ## Run It
 
@@ -25,11 +25,12 @@ bun run build
 
 ## Code Quality
 
-Biome handles formatting and linting, and TypeScript handles type checks:
+Biome handles formatting and linting, TypeScript handles type checks, and Vitest covers the runner model:
 
 ```sh
 bun run format
 bun run lint
+bun run test
 bun run typecheck
 bun run check
 ```
@@ -37,7 +38,8 @@ bun run check
 ## Project Shape
 
 - `index.html` defines the game shell and loads `/src/main.ts`.
-- `src/main.ts` contains the canvas game loop, physics, spawning, collision checks, and sprite rendering.
+- `src/main.ts` boots Excalibur, manages the runner scene, and renders the current Ballseat Town level.
+- `src/game/model.ts` contains test-covered runner state, physics, spawning, scoring, and collision rules.
 - `src/styles.css` controls the page layout around the game window.
 - `assets/generated/ballseat-sprite-sheet.png` contains generated gameplay sprites.
 - `assets/generated/ballseat-town-elements.png` contains generated Ballseat Town scenery elements for parallax background layers.
@@ -51,17 +53,18 @@ The game uses generated raster art for the main visual pieces instead of hand-dr
 - Houses, trees, shrubs, tracks, signs, and hills are cropped from `assets/generated/ballseat-town-elements.png` and composed as separate parallax layers.
 - `assets/generated/ballseat-sprite-sheet-magenta.png` is the original chroma-key source for the sprite sheet.
 
-When adding new Ballseat canon, update `references/canon.md` first. For new visual subjects, generate or edit raster assets from the references, save the final project-bound files under `assets/generated/`, then wire them into `src/main.ts` as sprite frames or background layers.
+When adding new Ballseat canon, update `references/canon.md` first. For new visual subjects, generate or edit raster assets from the references, save the final project-bound files under `assets/generated/`, then wire them into `src/main.ts` as sprite frames, background layers, or future level configs.
 
-Small gameplay text such as moods and pickup phrases still lives in `canonHooks` in `src/main.ts`.
+Small gameplay text such as moods and pickup phrases currently lives in `canonHooks` in `src/game/model.ts`.
 
 ## Scripts
 
 - `bun run dev`: start Vite with hot reload.
 - `bun run build`: type-check and build production output into ignored `dist/`.
 - `bun run preview`: preview the production build.
-- `bun run check`: run TypeScript and Biome checks.
-- `bun run ci`: run TypeScript, Biome CI, and production build.
+- `bun run test`: run Vitest unit tests.
+- `bun run check`: run TypeScript, Biome checks, and Vitest.
+- `bun run ci`: run TypeScript, Biome CI, Vitest, and production build.
 
 ## Controls
 

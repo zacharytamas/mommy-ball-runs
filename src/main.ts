@@ -1,32 +1,18 @@
-interface Runner {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  vy: number;
-  grounded: boolean;
-  ducking: boolean;
-  wobble: number;
-}
+import * as ex from "excalibur";
+import {
+  canonHooks,
+  createGameState,
+  type GameMode,
+  type GameState,
+  type Obstacle,
+  type Pickup,
+  type Runner,
+  resetGame,
+  setPaused,
+  updateGame,
+  world,
+} from "./game/model";
 
-interface Obstacle {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  kind: "goatbox" | "slurpSlurp" | "frank";
-  passed: boolean;
-}
-
-interface Pickup {
-  x: number;
-  y: number;
-  radius: number;
-  collected: boolean;
-  phrase: string;
-}
-
-type GameMode = "ready" | "running" | "paused" | "gameOver";
 type SpriteKey = "mommyBall" | "goatbox" | "slurpSlurp" | "frank" | "openTheCloset" | "ticket";
 type EnvironmentSpriteKey =
   | "cloudHills"
@@ -41,10 +27,6 @@ type EnvironmentSpriteKey =
   | "shrubLarge"
   | "shrubRound"
   | "shrubFlowers"
-  | "treeRound"
-  | "treeTall"
-  | "treeFlower"
-  | "treeBlue"
   | "treeSmall";
 
 interface SpriteFrame {
@@ -82,54 +64,10 @@ const overlay: HTMLElement = overlayCandidate;
 const overlayCopy: HTMLElement = overlayCopyCandidate;
 const startButton: HTMLButtonElement = startButtonCandidate;
 
-const renderingContext = canvas.getContext("2d");
-
-if (!renderingContext) {
-  throw new Error("Canvas is not supported");
-}
-
-const ctx: CanvasRenderingContext2D = renderingContext;
-
-const world = {
-  width: canvas.width,
-  height: canvas.height,
-  groundY: 468,
-  trainY: 346,
-  gravity: 2200,
-  jumpVelocity: -820,
-  baseSpeed: 360,
+const resources = {
+  sprites: new ex.ImageSource("/assets/generated/ballseat-sprite-sheet.png"),
+  town: new ex.ImageSource("/assets/generated/ballseat-town-elements.png"),
 };
-
-const canonHooks = {
-  runnerName: "Mommy Ball",
-  moods: [
-    "Ballseat bound",
-    "Train happy",
-    "Castle insurance",
-    "Island daydreaming",
-    "Learning Elementary late",
-  ],
-  pickupPhrases: [
-    "Open the Closet ticket",
-    "Ballseat Island pass",
-    "magic wand charge",
-    "Frank sighting",
-    "Slurp Slurp chorus",
-    "hundred babies roll-call",
-  ],
-};
-
-const spriteSheet = new Image();
-spriteSheet.src = "/assets/generated/ballseat-sprite-sheet.png";
-spriteSheet.addEventListener("load", () => {
-  draw();
-});
-
-const backgroundImage = new Image();
-backgroundImage.src = "/assets/generated/ballseat-town-elements.png";
-backgroundImage.addEventListener("load", () => {
-  draw();
-});
 
 const spriteFrames: Record<SpriteKey, SpriteFrame> = {
   mommyBall: { x: 70, y: 122, width: 385, height: 332 },
@@ -153,296 +91,144 @@ const environmentFrames: Record<EnvironmentSpriteKey, SpriteFrame> = {
   shrubLarge: { x: 57, y: 563, width: 181, height: 85 },
   shrubRound: { x: 294, y: 559, width: 143, height: 93 },
   shrubFlowers: { x: 509, y: 578, width: 238, height: 78 },
-  treeRound: { x: 48, y: 685, width: 195, height: 211 },
-  treeTall: { x: 292, y: 685, width: 155, height: 209 },
-  treeFlower: { x: 499, y: 692, width: 159, height: 202 },
-  treeBlue: { x: 702, y: 697, width: 157, height: 198 },
   treeSmall: { x: 900, y: 731, width: 132, height: 163 },
 };
 
-const runner: Runner = {
-  x: 126,
-  y: world.groundY - 86,
-  width: 76,
-  height: 86,
-  vy: 0,
-  grounded: true,
-  ducking: false,
-  wobble: 0,
-};
+const state = createGameState(Number(localStorage.getItem("mommy-ball-best") ?? 0));
+let previousMode: GameMode = state.mode;
 
-let mode: GameMode = "ready";
-let lastTime = 0;
-let score = 0;
-let bonusScore = 0;
-let best = Number(localStorage.getItem("mommy-ball-best") ?? 0);
-let distance = 0;
-let obstacleTimer = 0;
-let pickupTimer = 0;
-let moodTimer = 0;
-let currentMood = "Ready";
-let speed = world.baseSpeed;
+bestElement.textContent = String(state.best);
+updateHud();
 
-const keys = new Set<string>();
-const obstacles: Obstacle[] = [];
-const pickups: Pickup[] = [];
-
-bestElement.textContent = String(best);
-draw();
+const engine = new ex.Engine({
+  canvasElement: canvas,
+  width: world.width,
+  height: world.height,
+  displayMode: ex.DisplayMode.Fixed,
+  antialiasing: true,
+  suppressConsoleBootMessage: true,
+  suppressPlayButton: true,
+});
 
 startButton.addEventListener("click", () => {
-  if (mode === "running") return;
-  resetGame();
+  if (state.mode === "running") return;
+  if (state.mode === "paused") {
+    resumeGame();
+    return;
+  }
+
+  startGame();
 });
 
 window.addEventListener("keydown", (event: KeyboardEvent) => {
-  const key = event.key.toLowerCase();
-
   if ([" ", "arrowup", "arrowdown"].includes(event.key.toLowerCase())) {
     event.preventDefault();
   }
-
-  keys.add(key);
-
-  if (mode === "ready" && isJumpKey(key)) {
-    resetGame();
-  } else if (mode === "gameOver" && (key === "r" || isJumpKey(key))) {
-    resetGame();
-  } else if (key === "p" && mode === "running") {
-    setPaused(true);
-  } else if (key === "p" && mode === "paused") {
-    setPaused(false);
-  } else if (key === "r") {
-    resetGame();
-  }
 });
 
-window.addEventListener("keyup", (event: KeyboardEvent) => {
-  keys.delete(event.key.toLowerCase());
-});
-
-requestAnimationFrame(loop);
-
-function loop(time: number): void {
-  const delta = Math.min((time - lastTime) / 1000 || 0, 0.033);
-  lastTime = time;
-
-  if (mode === "running") {
-    update(delta);
+class RunnerScene extends ex.Scene {
+  constructor(private readonly gameState: GameState) {
+    super();
   }
 
-  draw();
-  requestAnimationFrame(loop);
+  override onPreUpdate(engine: ex.Engine, elapsed: number): void {
+    const keyboard = engine.input.keyboard;
+    const jumpPressed =
+      keyboard.wasPressed(ex.Keys.Space) ||
+      keyboard.wasPressed(ex.Keys.Up) ||
+      keyboard.wasPressed(ex.Keys.W);
+    const ducking = keyboard.isHeld(ex.Keys.Down) || keyboard.isHeld(ex.Keys.S);
+
+    if (this.gameState.mode === "ready" && jumpPressed) {
+      startGame();
+    } else if (
+      this.gameState.mode === "gameOver" &&
+      (jumpPressed || keyboard.wasPressed(ex.Keys.R))
+    ) {
+      startGame();
+    } else if (keyboard.wasPressed(ex.Keys.P) && this.gameState.mode === "running") {
+      pauseGame();
+    } else if (keyboard.wasPressed(ex.Keys.P) && this.gameState.mode === "paused") {
+      resumeGame();
+    } else if (keyboard.wasPressed(ex.Keys.R)) {
+      startGame();
+    }
+
+    updateGame(this.gameState, Math.min(elapsed / 1000, 0.033), { jumpPressed, ducking });
+    syncModeSideEffects();
+    updateHud();
+  }
+
+  override onPostDraw(ctx: ex.ExcaliburGraphicsContext): void {
+    drawBackground(ctx, this.gameState.distance);
+    drawTown(ctx, this.gameState.distance);
+    drawOpenTheCloset(ctx, this.gameState.distance);
+    drawTrackLayer(ctx, this.gameState.distance);
+    drawForegroundLane(ctx, this.gameState.distance);
+    drawPickups(ctx, this.gameState.pickups);
+    drawObstacles(ctx, this.gameState.obstacles);
+    drawRunner(ctx, this.gameState.runner);
+  }
 }
 
-function resetGame(): void {
-  mode = "running";
-  score = 0;
-  bonusScore = 0;
-  distance = 0;
-  speed = world.baseSpeed;
-  obstacleTimer = 0.85;
-  pickupTimer = 1.35;
-  moodTimer = 0;
-  currentMood = "Zooming";
-  obstacles.length = 0;
-  pickups.length = 0;
-  runner.y = world.groundY - runner.height;
-  runner.vy = 0;
-  runner.grounded = true;
-  runner.ducking = false;
+engine.add("runner", new RunnerScene(state));
+
+Promise.all([resources.sprites.load(), resources.town.load()])
+  .then(() => engine.start("runner"))
+  .then(() => {
+    updateHud();
+  });
+
+function startGame(): void {
+  resetGame(state);
+  overlay.hidden = true;
+  previousMode = state.mode;
+  updateHud();
+}
+
+function pauseGame(): void {
+  setPaused(state, true);
+  overlay.hidden = false;
+  overlayCopy.textContent = "Paused for dramatic canon consultation.";
+  startButton.textContent = "Resume";
+  updateHud();
+}
+
+function resumeGame(): void {
+  setPaused(state, false);
   overlay.hidden = true;
   updateHud();
 }
 
-function setPaused(paused: boolean): void {
-  mode = paused ? "paused" : "running";
-  overlay.hidden = !paused;
-  overlayCopy.textContent = "Paused for dramatic canon consultation.";
-  startButton.textContent = "Resume";
-}
+function syncModeSideEffects(): void {
+  if (previousMode === state.mode) return;
 
-function update(delta: number): void {
-  distance += speed * delta;
-  speed = world.baseSpeed + Math.min(270, distance * 0.025);
-  score = Math.floor(distance / 10) + bonusScore;
-
-  updateRunner(delta);
-  updateObstacles(delta);
-  updatePickups(delta);
-  checkCollisions();
-  updateMood(delta);
-  updateHud();
-}
-
-function updateRunner(delta: number): void {
-  runner.ducking = keys.has("arrowdown") || keys.has("s");
-  const targetHeight = runner.ducking && runner.grounded ? 58 : 86;
-  const oldBottom = runner.y + runner.height;
-  runner.height += (targetHeight - runner.height) * Math.min(1, delta * 18);
-  runner.y = oldBottom - runner.height;
-
-  if (isJumpPressed() && runner.grounded && !runner.ducking) {
-    runner.vy = world.jumpVelocity;
-    runner.grounded = false;
+  if (state.mode === "gameOver") {
+    localStorage.setItem("mommy-ball-best", String(state.best));
+    overlay.hidden = false;
+    overlayCopy.textContent = `${canonHooks.runnerName} bonked somewhere between Ballseat Town and Ballseat Island at ${state.score} points.`;
+    startButton.textContent = "Run Again";
   }
 
-  runner.vy += world.gravity * delta;
-  runner.y += runner.vy * delta;
-
-  const floor = world.groundY - runner.height;
-  if (runner.y >= floor) {
-    runner.y = floor;
-    runner.vy = 0;
-    runner.grounded = true;
-  }
-
-  runner.wobble += delta * (runner.grounded ? 10 : 5);
-}
-
-function updateObstacles(delta: number): void {
-  obstacleTimer -= delta;
-
-  if (obstacleTimer <= 0) {
-    spawnObstacle();
-    obstacleTimer = 0.72 + Math.random() * 0.9 - Math.min(0.28, distance / 9000);
-  }
-
-  for (const obstacle of obstacles) {
-    obstacle.x -= speed * delta;
-    if (!obstacle.passed && obstacle.x + obstacle.width < runner.x) {
-      obstacle.passed = true;
-      bonusScore += 25;
-    }
-  }
-
-  removeOffscreen(obstacles);
-}
-
-function updatePickups(delta: number): void {
-  pickupTimer -= delta;
-
-  if (pickupTimer <= 0) {
-    spawnPickup();
-    pickupTimer = 1.8 + Math.random() * 2.2;
-  }
-
-  for (const pickup of pickups) {
-    pickup.x -= speed * delta;
-  }
-
-  removeOffscreen(pickups);
-}
-
-function spawnObstacle(): void {
-  const roll = Math.random();
-  const kind: Obstacle["kind"] = roll > 0.7 ? "frank" : roll > 0.34 ? "slurpSlurp" : "goatbox";
-  const width = kind === "goatbox" ? 84 : kind === "slurpSlurp" ? 66 : 66;
-  const height = kind === "goatbox" ? 108 : kind === "slurpSlurp" ? 52 : 46;
-  const y = kind === "frank" ? world.groundY - 142 : world.groundY - height;
-  obstacles.push({
-    x: world.width + 24,
-    y,
-    width,
-    height,
-    kind,
-    passed: false,
-  });
-}
-
-function spawnPickup(): void {
-  const phrase =
-    canonHooks.pickupPhrases[Math.floor(Math.random() * canonHooks.pickupPhrases.length)];
-  pickups.push({
-    x: world.width + 40,
-    y: world.groundY - 138 - Math.random() * 74,
-    radius: 16,
-    collected: false,
-    phrase,
-  });
-}
-
-function checkCollisions(): void {
-  const runnerBox = {
-    x: runner.x + 12,
-    y: runner.y + 10,
-    width: runner.width - 24,
-    height: runner.height - 12,
-  };
-
-  for (const obstacle of obstacles) {
-    if (rectsOverlap(runnerBox, obstacle)) {
-      endGame();
-      return;
-    }
-  }
-
-  for (const pickup of pickups) {
-    if (!pickup.collected && circleRectOverlap(pickup, runnerBox)) {
-      pickup.collected = true;
-      bonusScore += 100;
-      currentMood = pickup.phrase;
-      moodTimer = 1.2;
-    }
-  }
-}
-
-function endGame(): void {
-  mode = "gameOver";
-  best = Math.max(best, score);
-  localStorage.setItem("mommy-ball-best", String(best));
-  bestElement.textContent = String(best);
-  overlay.hidden = false;
-  overlayCopy.textContent = `${canonHooks.runnerName} bonked somewhere between Ballseat Town and Ballseat Island at ${score} points.`;
-  startButton.textContent = "Run Again";
-  updateHud();
-}
-
-function updateMood(delta: number): void {
-  moodTimer -= delta;
-  if (moodTimer <= 0) {
-    currentMood = canonHooks.moods[Math.floor(distance / 700) % canonHooks.moods.length];
-    moodTimer = 1;
-  }
+  previousMode = state.mode;
 }
 
 function updateHud(): void {
-  scoreElement.textContent = String(score);
-  bestElement.textContent = String(best);
+  scoreElement.textContent = String(state.score);
+  bestElement.textContent = String(state.best);
   moodElement.textContent =
-    mode === "paused" ? "Paused" : mode === "gameOver" ? "Bonked" : currentMood;
+    state.mode === "paused" ? "Paused" : state.mode === "gameOver" ? "Bonked" : state.currentMood;
 }
 
-function draw(): void {
-  ctx.clearRect(0, 0, world.width, world.height);
-  drawBackground();
-  drawTown();
-  drawOpenTheCloset();
-  drawTrackLayer();
-  drawForegroundLane();
-  drawPickups();
-  drawObstacles();
-  drawRunner();
+function drawBackground(ctx: ex.ExcaliburGraphicsContext, distance: number): void {
+  ctx.drawRectangle(ex.vec(0, 0), world.width, world.height, ex.Color.fromHex("#a9ddf0"));
+  ctx.drawRectangle(ex.vec(0, 188), world.width, 180, ex.Color.fromHex("#dff4ef"));
+  ctx.drawRectangle(ex.vec(0, 335), world.width, world.height - 335, ex.Color.fromHex("#cbeec7"));
+
+  drawRepeatingEnvironment(ctx, "cloudHills", distance, 238, 355, 124, 0.2, 470, 70);
 }
 
-function drawBackground(): void {
-  const skyGradient = ctx.createLinearGradient(0, 0, 0, world.height);
-  skyGradient.addColorStop(0, "#a9ddf0");
-  skyGradient.addColorStop(0.62, "#dff4ef");
-  skyGradient.addColorStop(1, "#cbeec7");
-  ctx.fillStyle = skyGradient;
-  ctx.fillRect(0, 0, world.width, world.height);
-
-  drawRepeatingEnvironment("cloudHills", 238, 355, 124, 0.2, 470, 70);
-}
-
-function drawOpenTheCloset(): void {
-  const x = world.width - ((distance * 0.55) % (world.width + 680));
-
-  drawSprite("openTheCloset", x - 8, world.trainY - 78, 210, 154);
-}
-
-function drawTown(): void {
+function drawTown(ctx: ex.ExcaliburGraphicsContext, distance: number): void {
   const townSpeed = distance * 0.55;
   const patternWidth = 1080;
   const startX = -((townSpeed + 40) % patternWidth) - patternWidth;
@@ -457,35 +243,38 @@ function drawTown(): void {
 
   for (let x = startX; x < world.width + patternWidth; x += patternWidth) {
     for (const [sprite, offsetX, y, width, height] of rows) {
-      drawEnvironmentSprite(sprite, x + offsetX, y, width, height);
+      drawEnvironmentSprite(ctx, sprite, x + offsetX, y, width, height);
     }
   }
 }
 
-function drawTrackLayer(): void {
-  drawRepeatingEnvironment("rail", 354, 500, 73, 0.72, 0, 0);
-  drawRepeatingEnvironment("fence", 385, 300, 81, 0.66, 155, 120);
+function drawOpenTheCloset(ctx: ex.ExcaliburGraphicsContext, distance: number): void {
+  const x = world.width - ((distance * 0.55) % (world.width + 680));
+  drawSprite(ctx, "openTheCloset", x - 8, world.trainY - 78, 210, 154);
 }
 
-function drawForegroundLane(): void {
-  ctx.fillStyle = "#bfe7c0";
-  ctx.fillRect(0, 426, world.width, world.height - 426);
+function drawTrackLayer(ctx: ex.ExcaliburGraphicsContext, distance: number): void {
+  drawRepeatingEnvironment(ctx, "rail", distance, 354, 500, 73, 0.72, 0, 0);
+  drawRepeatingEnvironment(ctx, "fence", distance, 385, 300, 81, 0.66, 155, 120);
+}
 
-  ctx.fillStyle = "rgba(113, 153, 128, 0.34)";
+function drawForegroundLane(ctx: ex.ExcaliburGraphicsContext, distance: number): void {
+  ctx.drawRectangle(ex.vec(0, 426), world.width, world.height - 426, ex.Color.fromHex("#bfe7c0"));
+
   const dashWidth = 32;
   const dashGap = 28;
   const dashPattern = dashWidth + dashGap;
   const dashStart = -((distance * 0.98) % dashPattern);
   for (let x = dashStart; x < world.width; x += dashPattern) {
-    ctx.fillRect(x, 497, dashWidth, 7);
+    ctx.drawRectangle(ex.vec(x, 497), dashWidth, 7, ex.Color.fromRGB(113, 153, 128, 0.34));
   }
 
-  drawRepeatingEnvironment("shrubLarge", 414, 130, 61, 0.9, 360, 20);
-  drawRepeatingEnvironment("shrubFlowers", 421, 164, 54, 0.92, 440, 260);
-  drawRepeatingEnvironment("treeSmall", 368, 70, 86, 0.88, 620, 470);
+  drawRepeatingEnvironment(ctx, "shrubLarge", distance, 414, 130, 61, 0.9, 360, 20);
+  drawRepeatingEnvironment(ctx, "shrubFlowers", distance, 421, 164, 54, 0.92, 440, 260);
+  drawRepeatingEnvironment(ctx, "treeSmall", distance, 368, 70, 86, 0.88, 620, 470);
 }
 
-function drawRunner(): void {
+function drawRunner(ctx: ex.ExcaliburGraphicsContext, runner: Runner): void {
   const cx = runner.x + runner.width / 2;
   const cy = runner.y + runner.height / 2;
   const squash = runner.ducking ? 1.18 : 1;
@@ -495,51 +284,52 @@ function drawRunner(): void {
   ctx.translate(cx, cy);
   ctx.rotate(wobble);
   ctx.scale(squash, 1 / squash);
-  drawSprite("mommyBall", -58, -52, 116, 100);
+  drawSprite(ctx, "mommyBall", -58, -52, 116, 100);
   ctx.restore();
 }
 
-function drawObstacles(): void {
+function drawObstacles(ctx: ex.ExcaliburGraphicsContext, obstacles: Obstacle[]): void {
   for (const obstacle of obstacles) {
     if (obstacle.kind === "goatbox") {
-      drawGoatbox(obstacle);
+      drawSprite(ctx, "goatbox", obstacle.x - 8, obstacle.y - 18, 100, 128);
     } else if (obstacle.kind === "slurpSlurp") {
-      drawSlurpSlurp(obstacle);
+      drawSprite(ctx, "slurpSlurp", obstacle.x - 12, obstacle.y - 10, 90, 72);
     } else {
-      drawFrank(obstacle);
+      drawSprite(ctx, "frank", obstacle.x - 10, obstacle.y - 10, 86, 60);
     }
   }
 }
 
-function drawGoatbox(obstacle: Obstacle): void {
-  drawSprite("goatbox", obstacle.x - 8, obstacle.y - 18, 100, 128);
-}
-
-function drawSlurpSlurp(obstacle: Obstacle): void {
-  drawSprite("slurpSlurp", obstacle.x - 12, obstacle.y - 10, 90, 72);
-}
-
-function drawFrank(obstacle: Obstacle): void {
-  drawSprite("frank", obstacle.x - 10, obstacle.y - 10, 86, 60);
-}
-
-function drawPickups(): void {
+function drawPickups(ctx: ex.ExcaliburGraphicsContext, pickups: Pickup[]): void {
   for (const pickup of pickups) {
-    if (pickup.collected) continue;
-    drawSprite("ticket", pickup.x - 28, pickup.y - 20, 56, 40);
+    drawSprite(ctx, "ticket", pickup.x - 28, pickup.y - 20, 56, 40);
   }
 }
 
-function drawSprite(sprite: SpriteKey, x: number, y: number, width: number, height: number): void {
+function drawSprite(
+  ctx: ex.ExcaliburGraphicsContext,
+  sprite: SpriteKey,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+): void {
   const frame = spriteFrames[sprite];
-  if (!spriteSheet.complete || spriteSheet.naturalWidth === 0) {
-    return;
-  }
-
-  ctx.drawImage(spriteSheet, frame.x, frame.y, frame.width, frame.height, x, y, width, height);
+  ctx.drawImage(
+    resources.sprites.data,
+    frame.x,
+    frame.y,
+    frame.width,
+    frame.height,
+    x,
+    y,
+    width,
+    height,
+  );
 }
 
 function drawEnvironmentSprite(
+  ctx: ex.ExcaliburGraphicsContext,
   sprite: EnvironmentSpriteKey,
   x: number,
   y: number,
@@ -547,15 +337,23 @@ function drawEnvironmentSprite(
   height: number,
 ): void {
   const frame = environmentFrames[sprite];
-  if (!backgroundImage.complete || backgroundImage.naturalWidth === 0) {
-    return;
-  }
-
-  ctx.drawImage(backgroundImage, frame.x, frame.y, frame.width, frame.height, x, y, width, height);
+  ctx.drawImage(
+    resources.town.data,
+    frame.x,
+    frame.y,
+    frame.width,
+    frame.height,
+    x,
+    y,
+    width,
+    height,
+  );
 }
 
 function drawRepeatingEnvironment(
+  ctx: ex.ExcaliburGraphicsContext,
   sprite: EnvironmentSpriteKey,
+  distance: number,
   y: number,
   width: number,
   height: number,
@@ -566,46 +364,6 @@ function drawRepeatingEnvironment(
   const stride = width + spacing;
   const startX = -((distance * speedFactor + offset) % stride) - stride;
   for (let x = startX; x < world.width + stride; x += stride) {
-    drawEnvironmentSprite(sprite, x, y, width, height);
+    drawEnvironmentSprite(ctx, sprite, x, y, width, height);
   }
-}
-
-function removeOffscreen(items: Array<{ x: number; width?: number; radius?: number }>): void {
-  for (let index = items.length - 1; index >= 0; index -= 1) {
-    const item = items[index];
-    const padding = item.width ?? item.radius ?? 0;
-    if (item.x + padding < -80 || ("collected" in item && item.collected)) {
-      items.splice(index, 1);
-    }
-  }
-}
-
-function rectsOverlap(
-  a: { x: number; y: number; width: number; height: number },
-  b: { x: number; y: number; width: number; height: number },
-): boolean {
-  return a.x < b.x + b.width && a.x + a.width > b.x && a.y < b.y + b.height && a.y + a.height > b.y;
-}
-
-function circleRectOverlap(
-  circle: Pickup,
-  rect: { x: number; y: number; width: number; height: number },
-): boolean {
-  const closestX = clamp(circle.x, rect.x, rect.x + rect.width);
-  const closestY = clamp(circle.y, rect.y, rect.y + rect.height);
-  const dx = circle.x - closestX;
-  const dy = circle.y - closestY;
-  return dx * dx + dy * dy < circle.radius * circle.radius;
-}
-
-function clamp(value: number, min: number, max: number): number {
-  return Math.max(min, Math.min(max, value));
-}
-
-function isJumpPressed(): boolean {
-  return keys.has(" ") || keys.has("arrowup") || keys.has("w");
-}
-
-function isJumpKey(key: string): boolean {
-  return key === " " || key === "arrowup" || key === "w";
 }

@@ -9,15 +9,21 @@
     "format:check": "biome format .",
     "lint": "biome lint .",
     "lint:fix": "biome lint --write .",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
-    "ci": "tsc --noEmit && biome ci . && vite build",
+    "ci": "tsc --noEmit && biome ci . && vitest run && vite build",
     "dev": "vite --host 127.0.0.1",
     "preview": "vite preview --host 127.0.0.1",
-    "check": "tsc --noEmit && biome check ."
+    "check": "tsc --noEmit && biome check . && vitest run"
   },
   "devDependencies": {
     "@biomejs/biome": "2.4.13",
     "typescript": "6.0.3",
-    "vite": "4.5.14"
+    "vite": "4.5.14",
+    "vitest": "0.25.8"
+  },
+  "dependencies": {
+    "excalibur": "^0.32.0"
   }
 }
