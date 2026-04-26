@@ -121,7 +121,7 @@ startButton.addEventListener("click", () => {
 });
 
 window.addEventListener("keydown", (event: KeyboardEvent) => {
-  if ([" ", "arrowup", "arrowdown"].includes(event.key.toLowerCase())) {
+  if ([" ", "arrowup", "arrowdown", "arrowleft", "arrowright"].includes(event.key.toLowerCase())) {
     event.preventDefault();
   }
 });
@@ -138,8 +138,11 @@ class RunnerScene extends ex.Scene {
       keyboard.wasPressed(ex.Keys.Up) ||
       keyboard.wasPressed(ex.Keys.W);
     const ducking = keyboard.isHeld(ex.Keys.Down) || keyboard.isHeld(ex.Keys.S);
+    const left = keyboard.isHeld(ex.Keys.Left) || keyboard.isHeld(ex.Keys.A);
+    const right = keyboard.isHeld(ex.Keys.Right) || keyboard.isHeld(ex.Keys.D);
+    const horizontal = right && !left ? 1 : left && !right ? -1 : 0;
 
-    if (this.gameState.mode === "ready" && jumpPressed) {
+    if (this.gameState.mode === "ready" && (jumpPressed || horizontal !== 0)) {
       startGame();
     } else if (
       this.gameState.mode === "gameOver" &&
@@ -154,7 +157,11 @@ class RunnerScene extends ex.Scene {
       startGame();
     }
 
-    updateGame(this.gameState, Math.min(elapsed / 1000, 0.033), { jumpPressed, ducking });
+    updateGame(this.gameState, Math.min(elapsed / 1000, 0.033), {
+      horizontal,
+      jumpPressed,
+      ducking,
+    });
     syncModeSideEffects();
     updateHud();
   }

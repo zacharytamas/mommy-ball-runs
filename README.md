@@ -1,8 +1,8 @@
 # Mommy Ball Runs
 
-A silly browser-based TypeScript infinite runner set in Ballseat Town, an extremely serious literary universe created by children.
+A silly browser-based TypeScript side-scroller set in Ballseat Town, an extremely serious literary universe created by children.
 
-Mommy Ball runs through the Ballseat Town foreground, collects tickets, and dodges canon-accurate trouble from Goatbox, Slurp Slurp, and Frank.
+Mommy Ball scoots through the Ballseat Town foreground, collects tickets, and dodges canon-accurate trouble from Goatbox, Slurp Slurp, and Frank.
 
 ## Run It
 
@@ -69,6 +69,7 @@ Small gameplay text such as moods and pickup phrases currently lives in `canonHo
 ## Controls
 
 - Jump: Space, Up, or W
+- Move: Arrows, A, or D
 - Duck: Down or S
 - Pause: P
 - Restart: R

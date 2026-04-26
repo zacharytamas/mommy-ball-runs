@@ -13,11 +13,43 @@ describe("runner model", () => {
   it("starts Mommy Ball on the foreground lane and jumps from the ground", () => {
     const state = runningState();
 
-    updateGame(state, 0.016, { jumpPressed: true, ducking: false }, () => 0.5);
+    updateGame(state, 0.016, { horizontal: 0, jumpPressed: true, ducking: false }, () => 0.5);
 
     expect(state.runner.grounded).toBe(false);
     expect(state.runner.vy).toBeGreaterThan(world.jumpVelocity);
     expect(state.runner.y).toBeLessThan(world.groundY - state.runner.height);
+  });
+
+  it("advances the course when moving right and eases backward within a limit", () => {
+    const state = runningState();
+
+    updateGame(state, 1, { horizontal: 1, jumpPressed: false, ducking: false }, () => 0.5);
+    const forwardDistance = state.distance;
+
+    updateGame(state, 1, { horizontal: -1, jumpPressed: false, ducking: false }, () => 0.5);
+
+    expect(forwardDistance).toBeGreaterThan(0);
+    expect(state.furthestDistance).toBe(forwardDistance);
+    expect(state.distance).toBeGreaterThanOrEqual(forwardDistance - world.backtrackLimit);
+  });
+
+  it("does not advance the course without movement input", () => {
+    const state = runningState();
+
+    updateGame(state, 1, { horizontal: 0, jumpPressed: false, ducking: false }, () => 0.5);
+
+    expect(state.distance).toBe(0);
+    expect(state.score).toBe(0);
+  });
+
+  it("moves Mommy Ball around the play window without leaving it", () => {
+    const state = runningState();
+
+    updateGame(state, 5, { horizontal: -1, jumpPressed: false, ducking: false }, () => 0.5);
+    expect(state.runner.x).toBe(world.runnerMinX);
+
+    updateGame(state, 5, { horizontal: 1, jumpPressed: false, ducking: false }, () => 0.5);
+    expect(state.runner.x).toBe(world.runnerMaxX);
   });
 
   it("only awards obstacle pass points once", () => {
@@ -31,8 +63,8 @@ describe("runner model", () => {
       passed: false,
     });
 
-    updateGame(state, 0.016, { jumpPressed: false, ducking: false }, () => 0.5);
-    updateGame(state, 0.016, { jumpPressed: false, ducking: false }, () => 0.5);
+    updateGame(state, 0.016, { horizontal: 0, jumpPressed: false, ducking: false }, () => 0.5);
+    updateGame(state, 0.016, { horizontal: 0, jumpPressed: false, ducking: false }, () => 0.5);
 
     expect(state.bonusScore).toBe(25);
     expect(state.obstacles[0]?.passed).toBe(true);
@@ -48,7 +80,7 @@ describe("runner model", () => {
       phrase: "magic wand charge",
     });
 
-    updateGame(state, 0.016, { jumpPressed: false, ducking: false }, () => 0.5);
+    updateGame(state, 0.016, { horizontal: 0, jumpPressed: false, ducking: false }, () => 0.5);
 
     expect(state.bonusScore).toBe(100);
     expect(state.currentMood).toBe("magic wand charge");
@@ -67,7 +99,7 @@ describe("runner model", () => {
       passed: false,
     });
 
-    updateGame(state, 0.016, { jumpPressed: false, ducking: false }, () => 0.5);
+    updateGame(state, 0.016, { horizontal: 0, jumpPressed: false, ducking: false }, () => 0.5);
 
     expect(state.mode).toBe("gameOver");
     expect(state.best).toBeGreaterThanOrEqual(state.score);

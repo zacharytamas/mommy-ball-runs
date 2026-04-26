@@ -27,6 +27,7 @@ export interface Pickup {
 }
 
 export interface GameInput {
+  horizontal: -1 | 0 | 1;
   jumpPressed: boolean;
   ducking: boolean;
 }
@@ -39,6 +40,7 @@ export interface GameState {
   bonusScore: number;
   best: number;
   distance: number;
+  furthestDistance: number;
   speed: number;
   obstacleTimer: number;
   pickupTimer: number;
@@ -56,7 +58,11 @@ export const world = {
   trainY: 346,
   gravity: 2200,
   jumpVelocity: -820,
-  baseSpeed: 360,
+  cameraMoveSpeed: 260,
+  runnerMoveSpeed: 220,
+  runnerMinX: 96,
+  runnerMaxX: 430,
+  backtrackLimit: 330,
 };
 
 export const canonHooks = {
@@ -85,7 +91,8 @@ export function createGameState(best = 0): GameState {
     bonusScore: 0,
     best,
     distance: 0,
-    speed: world.baseSpeed,
+    furthestDistance: 0,
+    speed: 0,
     obstacleTimer: 0,
     pickupTimer: 0,
     moodTimer: 0,
@@ -101,7 +108,8 @@ export function resetGame(state: GameState): void {
   state.score = 0;
   state.bonusScore = 0;
   state.distance = 0;
-  state.speed = world.baseSpeed;
+  state.furthestDistance = 0;
+  state.speed = 0;
   state.obstacleTimer = 0.85;
   state.pickupTimer = 1.35;
   state.moodTimer = 0;
@@ -123,9 +131,8 @@ export function updateGame(
 ): void {
   if (state.mode !== "running") return;
 
-  state.distance += state.speed * delta;
-  state.speed = world.baseSpeed + Math.min(270, state.distance * 0.025);
-  state.score = Math.floor(state.distance / 10) + state.bonusScore;
+  updateCamera(state, delta, input.horizontal);
+  state.score = Math.floor(state.furthestDistance / 10) + state.bonusScore;
 
   updateRunner(state.runner, delta, input);
   updateObstacles(state, delta, random);
@@ -169,7 +176,7 @@ export function circleRectOverlap(
 
 function createRunner(): Runner {
   return {
-    x: 126,
+    x: 160,
     y: world.groundY - 86,
     width: 76,
     height: 86,
@@ -180,7 +187,22 @@ function createRunner(): Runner {
   };
 }
 
+function updateCamera(state: GameState, delta: number, horizontal: GameInput["horizontal"]): void {
+  const requestedDelta = horizontal * world.cameraMoveSpeed * delta;
+  const lowerBound = Math.max(0, state.furthestDistance - world.backtrackLimit);
+  const nextDistance = clamp(state.distance + requestedDelta, lowerBound, Number.POSITIVE_INFINITY);
+
+  state.speed = (nextDistance - state.distance) / Math.max(delta, Number.EPSILON);
+  state.distance = nextDistance;
+  state.furthestDistance = Math.max(state.furthestDistance, state.distance);
+}
+
 function updateRunner(runner: Runner, delta: number, input: GameInput): void {
+  runner.x = clamp(
+    runner.x + input.horizontal * world.runnerMoveSpeed * delta,
+    world.runnerMinX,
+    world.runnerMaxX,
+  );
   runner.ducking = input.ducking;
   const targetHeight = runner.ducking && runner.grounded ? 58 : 86;
   const oldBottom = runner.y + runner.height;
@@ -206,15 +228,20 @@ function updateRunner(runner: Runner, delta: number, input: GameInput): void {
 }
 
 function updateObstacles(state: GameState, delta: number, random: () => number): void {
-  state.obstacleTimer -= delta;
+  const scrollDelta = state.speed * delta;
+  const movingForward = scrollDelta > 0;
+
+  if (movingForward) {
+    state.obstacleTimer -= delta;
+  }
 
   if (state.obstacleTimer <= 0) {
     state.obstacles.push(createObstacle(random()));
-    state.obstacleTimer = 0.72 + random() * 0.9 - Math.min(0.28, state.distance / 9000);
+    state.obstacleTimer = 1.05 + random() * 1.15 - Math.min(0.22, state.furthestDistance / 11000);
   }
 
   for (const obstacle of state.obstacles) {
-    obstacle.x -= state.speed * delta;
+    obstacle.x -= scrollDelta;
     if (!obstacle.passed && obstacle.x + obstacle.width < state.runner.x) {
       obstacle.passed = true;
       state.bonusScore += 25;
@@ -225,15 +252,20 @@ function updateObstacles(state: GameState, delta: number, random: () => number):
 }
 
 function updatePickups(state: GameState, delta: number, random: () => number): void {
-  state.pickupTimer -= delta;
+  const scrollDelta = state.speed * delta;
+  const movingForward = scrollDelta > 0;
+
+  if (movingForward) {
+    state.pickupTimer -= delta;
+  }
 
   if (state.pickupTimer <= 0) {
     state.pickups.push(createPickup(random, state.pickups.length));
-    state.pickupTimer = 1.8 + random() * 2.2;
+    state.pickupTimer = 2.15 + random() * 2.45;
   }
 
   for (const pickup of state.pickups) {
-    pickup.x -= state.speed * delta;
+    pickup.x -= scrollDelta;
   }
 
   removeOffscreen(state.pickups);
