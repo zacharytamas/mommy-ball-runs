@@ -108,7 +108,7 @@ const canonHooks = {
 };
 
 const spriteSheet = new Image();
-spriteSheet.src = "./assets/generated/ballseat-sprite-sheet.png";
+spriteSheet.src = "/assets/generated/ballseat-sprite-sheet.png";
 spriteSheet.addEventListener("load", () => {
   draw();
 });

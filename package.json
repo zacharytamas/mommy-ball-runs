@@ -4,18 +4,20 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "node scripts/build.mjs",
+    "build": "tsc --noEmit && vite build",
     "format": "biome format --write .",
     "format:check": "biome format .",
     "lint": "biome lint .",
     "lint:fix": "biome lint --write .",
     "typecheck": "tsc --noEmit",
-    "ci": "node scripts/build.mjs --check && tsc --noEmit && biome ci .",
-    "dev": "node scripts/dev-server.mjs",
-    "check": "node scripts/build.mjs --check && tsc --noEmit && biome check ."
+    "ci": "tsc --noEmit && biome ci . && vite build",
+    "dev": "vite --host 127.0.0.1",
+    "preview": "vite preview --host 127.0.0.1",
+    "check": "tsc --noEmit && biome check ."
   },
   "devDependencies": {
     "@biomejs/biome": "2.4.13",
-    "typescript": "6.0.3"
+    "typescript": "6.0.3",
+    "vite": "4.5.14"
   }
 }

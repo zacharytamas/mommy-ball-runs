@@ -4,16 +4,16 @@ A silly browser-based TypeScript infinite runner, ready for whatever extremely s
 
 ## Run It
 
-This first scaffold avoids package installation because the local environment has Node but no `npm`.
+Install dependencies, then start Vite:
 
 ```sh
-node scripts/build.mjs
-node scripts/dev-server.mjs
+bun install
+bun run dev
 ```
 
 Then open [http://localhost:5173](http://localhost:5173).
 
-The included dev server binds to `127.0.0.1` by default. Set `PORT` or `HOST` if you need a different local address.
+Vite serves the TypeScript entrypoint directly in development and hot-reloads the browser when HTML, CSS, TypeScript, or assets change.
 
 ## Code Quality
 
@@ -27,9 +27,9 @@ biome lint .
 Once dependencies are installed, the same checks are available through the package scripts:
 
 ```sh
-npm run format
-npm run lint
-npm run check
+bun run format
+bun run lint
+bun run check
 ```
 
 ## Controls
