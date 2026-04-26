@@ -62,6 +62,27 @@ const canonHooks = {
   ],
 };
 
+const spriteSheet = new Image();
+spriteSheet.src = "./assets/generated/ballseat-sprite-sheet.png";
+spriteSheet.addEventListener("load", () => {
+  draw();
+});
+
+const spriteFrames = {
+  mommyBall: { column: 0, row: 0 },
+  goatbox: { column: 1, row: 0 },
+  slurpSlurp: { column: 2, row: 0 },
+  frank: { column: 0, row: 1 },
+  openTheCloset: { column: 1, row: 1 },
+  ticket: { column: 2, row: 1 },
+};
+
+const spriteCell = {
+  width: 512,
+  height: 512,
+  inset: 10,
+};
+
 const runner = {
   x: 126,
   y: world.groundY - 86,
@@ -482,59 +503,7 @@ function drawOpenTheCloset() {
   const x = world.width - ((distance * 0.42) % (world.width + 360));
   const y = world.groundY - 70;
 
-  ctx.save();
-  ctx.translate(x, y);
-  ctx.strokeStyle = "#241f18";
-  ctx.lineWidth = 4;
-
-  ctx.fillStyle = "#f05f3b";
-  roundRect(-34, 36, 246, 32, 6);
-  ctx.fill();
-  ctx.stroke();
-
-  ctx.fillStyle = "#1f9bd3";
-  roundRect(36, 0, 74, 62, 7);
-  ctx.fill();
-  ctx.stroke();
-  roundRect(100, 18, 92, 44, 8);
-  ctx.fill();
-  ctx.stroke();
-  ctx.fillRect(166, -8, 26, 30);
-  ctx.strokeRect(166, -8, 26, 30);
-  ctx.beginPath();
-  ctx.arc(138, 18, 16, Math.PI, 0);
-  ctx.fill();
-  ctx.stroke();
-
-  ctx.fillStyle = "#fffdf8";
-  roundRect(28, -12, 92, 22, 8);
-  ctx.fill();
-  ctx.stroke();
-  ctx.fillStyle = "#83d3f2";
-  roundRect(52, 14, 34, 28, 4);
-  ctx.fill();
-  ctx.stroke();
-
-  ctx.fillStyle = "#8b7765";
-  for (const wheelX of [42, 102, 160]) {
-    ctx.beginPath();
-    ctx.arc(wheelX, 70, 18, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.arc(wheelX, 70, 6, 0, Math.PI * 2);
-    ctx.fillStyle = "#f05f3b";
-    ctx.fill();
-    ctx.stroke();
-    ctx.fillStyle = "#8b7765";
-  }
-
-  ctx.fillStyle = "#241f18";
-  ctx.font = "900 10px system-ui";
-  ctx.textAlign = "center";
-  ctx.fillText("OPEN", 73, 29);
-  ctx.fillText("THE CLOSET", 145, 47);
-  ctx.restore();
+  drawSprite("openTheCloset", x - 20, y - 42, 250, 128);
 }
 
 function drawRunner() {
@@ -547,69 +516,7 @@ function drawRunner() {
   ctx.translate(cx, cy);
   ctx.rotate(wobble);
   ctx.scale(squash, 1 / squash);
-
-  ctx.strokeStyle = "#241f18";
-  ctx.lineWidth = 5;
-  ctx.fillStyle = "#d66b13";
-  ctx.beginPath();
-  ctx.ellipse(-22, 42, 18, 12, -0.2, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.stroke();
-  ctx.beginPath();
-  ctx.ellipse(24, 42, 18, 12, 0.2, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.stroke();
-
-  ctx.strokeStyle = "#241f18";
-  ctx.lineWidth = 6;
-  ctx.beginPath();
-  ctx.moveTo(-32, 8);
-  ctx.quadraticCurveTo(-54, 28, -40, 44);
-  ctx.stroke();
-  ctx.beginPath();
-  ctx.moveTo(34, 6);
-  ctx.quadraticCurveTo(54, 26, 42, 44);
-  ctx.stroke();
-
-  ctx.fillStyle = "#ee9500";
-  ctx.strokeStyle = "#241f18";
-  ctx.lineWidth = 5;
-  ctx.beginPath();
-  ctx.arc(0, 0, runner.width / 2, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.stroke();
-
-  ctx.fillStyle = "rgba(117, 61, 10, 0.28)";
-  ctx.beginPath();
-  ctx.arc(-7, 4, runner.width / 2 - 6, 0.2, Math.PI - 0.14);
-  ctx.lineTo(-36, 11);
-  ctx.fill();
-
-  ctx.fillStyle = "#fff3c7";
-  ctx.strokeStyle = "#241f18";
-  ctx.lineWidth = 4;
-  ctx.beginPath();
-  ctx.ellipse(-10, -12, 12, 18, -0.08, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.stroke();
-  ctx.beginPath();
-  ctx.ellipse(20, -12, 12, 18, 0.08, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.stroke();
-
-  ctx.fillStyle = "#241f18";
-  ctx.beginPath();
-  ctx.ellipse(-6, -10, 4, 8, 0, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.beginPath();
-  ctx.ellipse(16, -10, 4, 8, 0, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.lineWidth = 5;
-  ctx.beginPath();
-  ctx.moveTo(9, 11);
-  ctx.lineTo(30, 11);
-  ctx.stroke();
-
+  drawSprite("mommyBall", -70, -70, 140, 140);
   ctx.restore();
 }
 
@@ -626,137 +533,35 @@ function drawObstacles() {
 }
 
 function drawGoatbox(obstacle) {
-  const { x, y } = obstacle;
-  ctx.save();
-  ctx.translate(x, y);
-  ctx.strokeStyle = "#241f18";
-  ctx.lineWidth = 4;
-
-  ctx.fillStyle = "#fff0a8";
-  ctx.beginPath();
-  ctx.ellipse(47, 18, 34, 24, 0, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.stroke();
-  ctx.fillStyle = "#b4772e";
-  for (const hornX of [30, 58]) {
-    ctx.beginPath();
-    ctx.moveTo(hornX, 0);
-    ctx.quadraticCurveTo(hornX + 4, -24, hornX + 22, -30);
-    ctx.quadraticCurveTo(hornX + 17, -7, hornX + 8, 8);
-    ctx.fill();
-    ctx.stroke();
-  }
-
-  ctx.fillStyle = "#0a82a0";
-  roundRect(10, 34, 64, 58, 7);
-  ctx.fill();
-  ctx.stroke();
-  ctx.fillStyle = "#ef6539";
-  roundRect(24, 54, 42, 18, 5);
-  ctx.fill();
-  ctx.stroke();
-
-  ctx.fillStyle = "#fffdf8";
-  ctx.beginPath();
-  ctx.arc(40, 17, 10, 0, Math.PI * 2);
-  ctx.arc(62, 17, 10, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.stroke();
-  ctx.fillStyle = "#241f18";
-  ctx.beginPath();
-  ctx.arc(42, 18, 4, 0, Math.PI * 2);
-  ctx.arc(64, 18, 4, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.beginPath();
-  ctx.arc(62, 30, 14, 0.15, Math.PI - 0.15);
-  ctx.stroke();
-
-  ctx.fillStyle = "#6d431a";
-  ctx.fillRect(20, 92, 10, 16);
-  ctx.fillRect(56, 92, 10, 16);
-  ctx.restore();
+  drawSprite("goatbox", obstacle.x - 28, obstacle.y - 22, 144, 144);
 }
 
 function drawSlurpSlurp(obstacle) {
-  const { x, y, width, height } = obstacle;
-  ctx.save();
-  ctx.translate(x, y);
-  ctx.strokeStyle = "#241f18";
-  ctx.lineWidth = 4;
-  ctx.fillStyle = "#8d6b3f";
-  ctx.beginPath();
-  ctx.ellipse(width / 2, height - 10, width / 2 - 4, height / 2 - 4, 0, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.stroke();
-  ctx.fillStyle = "#fffdf8";
-  ctx.beginPath();
-  ctx.arc(22, 12, 10, 0, Math.PI * 2);
-  ctx.arc(44, 12, 10, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.stroke();
-  ctx.fillStyle = "#241f18";
-  ctx.beginPath();
-  ctx.arc(24, 13, 4, 0, Math.PI * 2);
-  ctx.arc(42, 13, 4, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.strokeStyle = "#ef6539";
-  ctx.lineWidth = 5;
-  ctx.beginPath();
-  ctx.moveTo(22, 34);
-  ctx.quadraticCurveTo(34, 46, 52, 32);
-  ctx.stroke();
-  ctx.restore();
+  drawSprite("slurpSlurp", obstacle.x - 28, obstacle.y - 38, 128, 96);
 }
 
 function drawFrank(obstacle) {
-  const { x, y } = obstacle;
-  ctx.save();
-  ctx.translate(x, y);
-  ctx.strokeStyle = "#241f18";
-  ctx.lineWidth = 4;
-  ctx.fillStyle = "#d24f45";
-  ctx.beginPath();
-  ctx.ellipse(24, 22, 22, 18, 0.18, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.stroke();
-  ctx.beginPath();
-  ctx.moveTo(24, 5);
-  ctx.lineTo(24, 39);
-  ctx.stroke();
-  ctx.fillStyle = "#241f18";
-  for (const spot of [
-    [14, 18],
-    [32, 16],
-    [20, 28],
-    [36, 29],
-  ]) {
-    ctx.beginPath();
-    ctx.arc(spot[0], spot[1], 4, 0, Math.PI * 2);
-    ctx.fill();
-  }
-  ctx.beginPath();
-  ctx.arc(44, 17, 8, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.restore();
+  drawSprite("frank", obstacle.x - 32, obstacle.y - 32, 112, 84);
 }
 
 function drawPickups() {
   for (const pickup of pickups) {
     if (pickup.collected) continue;
-    ctx.fillStyle = "#fff071";
-    ctx.strokeStyle = "#241f18";
-    ctx.lineWidth = 4;
-    ctx.beginPath();
-    ctx.arc(pickup.x, pickup.y, pickup.radius, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.stroke();
-
-    ctx.fillStyle = "#241f18";
-    ctx.font = "900 16px system-ui";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText("!", pickup.x, pickup.y + 1);
+    drawSprite("ticket", pickup.x - 28, pickup.y - 20, 56, 40);
   }
+}
+
+function drawSprite(sprite, x, y, width, height) {
+  const frame = spriteFrames[sprite];
+  if (!spriteSheet.complete || spriteSheet.naturalWidth === 0) {
+    return;
+  }
+
+  const sourceX = frame.column * spriteCell.width + spriteCell.inset;
+  const sourceY = frame.row * spriteCell.height + spriteCell.inset;
+  const sourceWidth = spriteCell.width - spriteCell.inset * 2;
+  const sourceHeight = spriteCell.height - spriteCell.inset * 2;
+  ctx.drawImage(spriteSheet, sourceX, sourceY, sourceWidth, sourceHeight, x, y, width, height);
 }
 
 function roundRect(x, y, width, height, radius) {

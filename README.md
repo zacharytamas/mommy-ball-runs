@@ -48,4 +48,4 @@ Start with `canonHooks` in `src/main.ts`. It currently controls the runner name,
 - Chapter-style biomes
 - Collectible lore snippets between runs
 
-The current build pulls visual direction from `references/`: Ballseat Town scenery, the blue-and-red Open the Closet train, Goatbox, Slurp Slurp frogs, and Frank ladybugs are all drawn directly in canvas with flat shapes and heavy outlines.
+The current build pulls visual direction from `references/`. Game sprites live in `assets/generated/ballseat-sprite-sheet.png`, generated with the `imagegen` skill from the reference art, then used by the canvas renderer for Mommy Ball, Open the Closet, Goatbox, Slurp Slurp, Frank, and ticket pickups.
