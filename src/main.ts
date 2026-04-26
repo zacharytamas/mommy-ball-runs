@@ -28,6 +28,24 @@ interface Pickup {
 
 type GameMode = "ready" | "running" | "paused" | "gameOver";
 type SpriteKey = "mommyBall" | "goatbox" | "slurpSlurp" | "frank" | "openTheCloset" | "ticket";
+type EnvironmentSpriteKey =
+  | "cloudHills"
+  | "housePink"
+  | "houseLavender"
+  | "houseYellow"
+  | "houseBlue"
+  | "school"
+  | "rail"
+  | "fence"
+  | "sign"
+  | "shrubLarge"
+  | "shrubRound"
+  | "shrubFlowers"
+  | "treeRound"
+  | "treeTall"
+  | "treeFlower"
+  | "treeBlue"
+  | "treeSmall";
 
 interface SpriteFrame {
   x: number;
@@ -108,7 +126,7 @@ spriteSheet.addEventListener("load", () => {
 });
 
 const backgroundImage = new Image();
-backgroundImage.src = "/assets/generated/ballseat-town-background.png";
+backgroundImage.src = "/assets/generated/ballseat-town-elements.png";
 backgroundImage.addEventListener("load", () => {
   draw();
 });
@@ -120,6 +138,26 @@ const spriteFrames: Record<SpriteKey, SpriteFrame> = {
   frank: { x: 53, y: 606, width: 423, height: 294 },
   openTheCloset: { x: 552, y: 600, width: 438, height: 320 },
   ticket: { x: 1075, y: 617, width: 421, height: 313 },
+};
+
+const environmentFrames: Record<EnvironmentSpriteKey, SpriteFrame> = {
+  cloudHills: { x: 1053, y: 690, width: 590, height: 207 },
+  housePink: { x: 46, y: 141, width: 216, height: 222 },
+  houseLavender: { x: 300, y: 157, width: 259, height: 205 },
+  houseYellow: { x: 604, y: 161, width: 257, height: 206 },
+  houseBlue: { x: 900, y: 165, width: 272, height: 202 },
+  school: { x: 1201, y: 30, width: 453, height: 335 },
+  rail: { x: 52, y: 413, width: 762, height: 111 },
+  fence: { x: 866, y: 432, width: 419, height: 113 },
+  sign: { x: 1365, y: 413, width: 238, height: 218 },
+  shrubLarge: { x: 57, y: 563, width: 181, height: 85 },
+  shrubRound: { x: 294, y: 559, width: 143, height: 93 },
+  shrubFlowers: { x: 509, y: 578, width: 238, height: 78 },
+  treeRound: { x: 48, y: 685, width: 195, height: 211 },
+  treeTall: { x: 292, y: 685, width: 155, height: 209 },
+  treeFlower: { x: 499, y: 692, width: 159, height: 202 },
+  treeBlue: { x: 702, y: 697, width: 157, height: 198 },
+  treeSmall: { x: 900, y: 731, width: 132, height: 163 },
 };
 
 const runner: Runner = {
@@ -378,26 +416,73 @@ function updateHud(): void {
 function draw(): void {
   ctx.clearRect(0, 0, world.width, world.height);
   drawBackground();
+  drawTown();
   drawOpenTheCloset();
+  drawTrackLayer();
+  drawForegroundLane();
   drawPickups();
   drawObstacles();
   drawRunner();
 }
 
 function drawBackground(): void {
-  if (!backgroundImage.complete || backgroundImage.naturalWidth === 0) {
-    ctx.fillStyle = "#8ed4e8";
-    ctx.fillRect(0, 0, world.width, world.height);
-    return;
-  }
+  const skyGradient = ctx.createLinearGradient(0, 0, 0, world.height);
+  skyGradient.addColorStop(0, "#a9ddf0");
+  skyGradient.addColorStop(0.62, "#dff4ef");
+  skyGradient.addColorStop(1, "#cbeec7");
+  ctx.fillStyle = skyGradient;
+  ctx.fillRect(0, 0, world.width, world.height);
 
-  ctx.drawImage(backgroundImage, 0, 0, world.width, world.height);
+  drawRepeatingEnvironment("cloudHills", 238, 355, 124, 0.2, 470, 70);
 }
 
 function drawOpenTheCloset(): void {
-  const x = world.width - ((distance * 0.42) % (world.width + 360));
+  const x = world.width - ((distance * 0.55) % (world.width + 680));
 
   drawSprite("openTheCloset", x - 8, world.trainY - 78, 210, 154);
+}
+
+function drawTown(): void {
+  const townSpeed = distance * 0.55;
+  const patternWidth = 1080;
+  const startX = -((townSpeed + 40) % patternWidth) - patternWidth;
+  const rows: Array<[EnvironmentSpriteKey, number, number, number, number]> = [
+    ["housePink", 20, 236, 150, 154],
+    ["houseLavender", 210, 236, 176, 139],
+    ["houseYellow", 435, 230, 170, 137],
+    ["houseBlue", 655, 232, 178, 132],
+    ["school", 860, 196, 235, 174],
+    ["sign", 1118, 270, 130, 120],
+  ];
+
+  for (let x = startX; x < world.width + patternWidth; x += patternWidth) {
+    for (const [sprite, offsetX, y, width, height] of rows) {
+      drawEnvironmentSprite(sprite, x + offsetX, y, width, height);
+    }
+  }
+}
+
+function drawTrackLayer(): void {
+  drawRepeatingEnvironment("rail", 354, 500, 73, 0.72, 0, 0);
+  drawRepeatingEnvironment("fence", 385, 300, 81, 0.66, 155, 120);
+}
+
+function drawForegroundLane(): void {
+  ctx.fillStyle = "#bfe7c0";
+  ctx.fillRect(0, 426, world.width, world.height - 426);
+
+  ctx.fillStyle = "rgba(113, 153, 128, 0.34)";
+  const dashWidth = 32;
+  const dashGap = 28;
+  const dashPattern = dashWidth + dashGap;
+  const dashStart = -((distance * 0.98) % dashPattern);
+  for (let x = dashStart; x < world.width; x += dashPattern) {
+    ctx.fillRect(x, 497, dashWidth, 7);
+  }
+
+  drawRepeatingEnvironment("shrubLarge", 414, 130, 61, 0.9, 360, 20);
+  drawRepeatingEnvironment("shrubFlowers", 421, 164, 54, 0.92, 440, 260);
+  drawRepeatingEnvironment("treeSmall", 368, 70, 86, 0.88, 620, 470);
 }
 
 function drawRunner(): void {
@@ -452,6 +537,37 @@ function drawSprite(sprite: SpriteKey, x: number, y: number, width: number, heig
   }
 
   ctx.drawImage(spriteSheet, frame.x, frame.y, frame.width, frame.height, x, y, width, height);
+}
+
+function drawEnvironmentSprite(
+  sprite: EnvironmentSpriteKey,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+): void {
+  const frame = environmentFrames[sprite];
+  if (!backgroundImage.complete || backgroundImage.naturalWidth === 0) {
+    return;
+  }
+
+  ctx.drawImage(backgroundImage, frame.x, frame.y, frame.width, frame.height, x, y, width, height);
+}
+
+function drawRepeatingEnvironment(
+  sprite: EnvironmentSpriteKey,
+  y: number,
+  width: number,
+  height: number,
+  speedFactor: number,
+  spacing: number,
+  offset: number,
+): void {
+  const stride = width + spacing;
+  const startX = -((distance * speedFactor + offset) % stride) - stride;
+  for (let x = startX; x < world.width + stride; x += stride) {
+    drawEnvironmentSprite(sprite, x, y, width, height);
+  }
 }
 
 function removeOffscreen(items: Array<{ x: number; width?: number; radius?: number }>): void {

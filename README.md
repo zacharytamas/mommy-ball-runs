@@ -40,7 +40,7 @@ bun run check
 - `src/main.ts` contains the canvas game loop, physics, spawning, collision checks, and sprite rendering.
 - `src/styles.css` controls the page layout around the game window.
 - `assets/generated/ballseat-sprite-sheet.png` contains generated gameplay sprites.
-- `assets/generated/ballseat-town-background.png` contains the generated Ballseat Town backdrop.
+- `assets/generated/ballseat-town-elements.png` contains generated Ballseat Town scenery elements for parallax background layers.
 - `references/` contains canon notes and visual references used to create generated assets.
 
 ## Generated Assets
@@ -48,7 +48,7 @@ bun run check
 The game uses generated raster art for the main visual pieces instead of hand-drawn canvas approximations:
 
 - Mommy Ball, Open the Closet, Goatbox, Slurp Slurp, Frank, and ticket pickups are cropped from `assets/generated/ballseat-sprite-sheet.png`.
-- The background is `assets/generated/ballseat-town-background.png`.
+- Houses, trees, shrubs, tracks, signs, and hills are cropped from `assets/generated/ballseat-town-elements.png` and composed as separate parallax layers.
 - `assets/generated/ballseat-sprite-sheet-magenta.png` is the original chroma-key source for the sprite sheet.
 
 When adding new Ballseat canon, update `references/canon.md` first. For new visual subjects, generate or edit raster assets from the references, save the final project-bound files under `assets/generated/`, then wire them into `src/main.ts` as sprite frames or background layers.
