@@ -69,18 +69,12 @@ spriteSheet.addEventListener("load", () => {
 });
 
 const spriteFrames = {
-  mommyBall: { column: 0, row: 0 },
-  goatbox: { column: 1, row: 0 },
-  slurpSlurp: { column: 2, row: 0 },
-  frank: { column: 0, row: 1 },
-  openTheCloset: { column: 1, row: 1 },
-  ticket: { column: 2, row: 1 },
-};
-
-const spriteCell = {
-  width: 512,
-  height: 512,
-  inset: 10,
+  mommyBall: { x: 70, y: 122, width: 385, height: 332 },
+  goatbox: { x: 580, y: 45, width: 340, height: 437 },
+  slurpSlurp: { x: 1085, y: 199, width: 334, height: 269 },
+  frank: { x: 53, y: 606, width: 423, height: 294 },
+  openTheCloset: { x: 552, y: 600, width: 438, height: 320 },
+  ticket: { x: 1075, y: 617, width: 421, height: 313 },
 };
 
 const runner = {
@@ -276,8 +270,8 @@ function updatePickups(delta) {
 function spawnObstacle() {
   const roll = Math.random();
   const kind = roll > 0.7 ? "frank" : roll > 0.34 ? "slurpSlurp" : "goatbox";
-  const width = kind === "goatbox" ? 84 : kind === "slurpSlurp" ? 66 : 48;
-  const height = kind === "goatbox" ? 108 : kind === "slurpSlurp" ? 52 : 44;
+  const width = kind === "goatbox" ? 84 : kind === "slurpSlurp" ? 66 : 66;
+  const height = kind === "goatbox" ? 108 : kind === "slurpSlurp" ? 52 : 46;
   const y = kind === "frank" ? world.groundY - 142 : world.groundY - height;
   obstacles.push({
     x: world.width + 24,
@@ -503,7 +497,7 @@ function drawOpenTheCloset() {
   const x = world.width - ((distance * 0.42) % (world.width + 360));
   const y = world.groundY - 70;
 
-  drawSprite("openTheCloset", x - 20, y - 42, 250, 128);
+  drawSprite("openTheCloset", x - 8, y - 78, 210, 154);
 }
 
 function drawRunner() {
@@ -516,7 +510,7 @@ function drawRunner() {
   ctx.translate(cx, cy);
   ctx.rotate(wobble);
   ctx.scale(squash, 1 / squash);
-  drawSprite("mommyBall", -70, -70, 140, 140);
+  drawSprite("mommyBall", -58, -52, 116, 100);
   ctx.restore();
 }
 
@@ -533,15 +527,15 @@ function drawObstacles() {
 }
 
 function drawGoatbox(obstacle) {
-  drawSprite("goatbox", obstacle.x - 28, obstacle.y - 22, 144, 144);
+  drawSprite("goatbox", obstacle.x - 8, obstacle.y - 18, 100, 128);
 }
 
 function drawSlurpSlurp(obstacle) {
-  drawSprite("slurpSlurp", obstacle.x - 28, obstacle.y - 38, 128, 96);
+  drawSprite("slurpSlurp", obstacle.x - 12, obstacle.y - 10, 90, 72);
 }
 
 function drawFrank(obstacle) {
-  drawSprite("frank", obstacle.x - 32, obstacle.y - 32, 112, 84);
+  drawSprite("frank", obstacle.x - 10, obstacle.y - 10, 86, 60);
 }
 
 function drawPickups() {
@@ -557,11 +551,7 @@ function drawSprite(sprite, x, y, width, height) {
     return;
   }
 
-  const sourceX = frame.column * spriteCell.width + spriteCell.inset;
-  const sourceY = frame.row * spriteCell.height + spriteCell.inset;
-  const sourceWidth = spriteCell.width - spriteCell.inset * 2;
-  const sourceHeight = spriteCell.height - spriteCell.inset * 2;
-  ctx.drawImage(spriteSheet, sourceX, sourceY, sourceWidth, sourceHeight, x, y, width, height);
+  ctx.drawImage(spriteSheet, frame.x, frame.y, frame.width, frame.height, x, y, width, height);
 }
 
 function roundRect(x, y, width, height, radius) {
