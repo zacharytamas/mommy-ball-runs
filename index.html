@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mommy Ball Runs</title>
+    <link rel="stylesheet" href="./src/styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <section class="game-panel" aria-label="Mommy Ball Runs game">
+        <canvas id="game" width="960" height="540"></canvas>
+        <div class="hud" aria-live="polite">
+          <div>
+            <span class="label">Score</span>
+            <strong id="score">0</strong>
+          </div>
+          <div>
+            <span class="label">Best</span>
+            <strong id="best">0</strong>
+          </div>
+          <div>
+            <span class="label">Mood</span>
+            <strong id="mood">Ready</strong>
+          </div>
+        </div>
+        <div id="overlay" class="overlay">
+          <h1>Mommy Ball Runs</h1>
+          <p id="overlay-copy">Press Space to begin the deeply unserious journey.</p>
+          <button id="start" type="button">Start Run</button>
+        </div>
+      </section>
+      <aside class="controls" aria-label="Game controls">
+        <h2>Controls</h2>
+        <dl>
+          <div>
+            <dt>Jump</dt>
+            <dd>Space / Up / W</dd>
+          </div>
+          <div>
+            <dt>Duck</dt>
+            <dd>Down / S</dd>
+          </div>
+          <div>
+            <dt>Pause</dt>
+            <dd>P</dd>
+          </div>
+          <div>
+            <dt>Restart</dt>
+            <dd>R</dd>
+          </div>
+        </dl>
+      </aside>
+    </main>
+    <script type="module" src="./dist/main.js"></script>
+  </body>
+</html>
