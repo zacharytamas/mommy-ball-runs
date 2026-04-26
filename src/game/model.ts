@@ -60,8 +60,8 @@ export const world = {
   jumpVelocity: -820,
   cameraMoveSpeed: 260,
   runnerMoveSpeed: 220,
-  runnerMinX: 96,
-  runnerMaxX: 430,
+  runnerMinX: 110,
+  runnerMaxX: 320,
   backtrackLimit: 330,
 };
 

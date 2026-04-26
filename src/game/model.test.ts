@@ -52,6 +52,10 @@ describe("runner model", () => {
     expect(state.runner.x).toBe(world.runnerMaxX);
   });
 
+  it("keeps most of the window ahead of Mommy Ball at the forward edge", () => {
+    expect(world.width - (world.runnerMaxX + 76)).toBeGreaterThanOrEqual(560);
+  });
+
   it("only awards obstacle pass points once", () => {
     const state = runningState();
     state.obstacles.push({
