@@ -12,8 +12,14 @@ const stripped = source
   .replace(/^type\s+\w+\s*=\s*[^;]+;\n/gm, "")
   .replace(/document\.querySelector<[^>]+>/g, "document.querySelector")
   .replace(/new Set<[^>]+>\(/g, "new Set(")
-  .replace(/addEventListener\("keydown", \(event: KeyboardEvent\)/g, 'addEventListener("keydown", (event)')
-  .replace(/addEventListener\("keyup", \(event: KeyboardEvent\)/g, 'addEventListener("keyup", (event)')
+  .replace(
+    /addEventListener\("keydown", \(event: KeyboardEvent\)/g,
+    'addEventListener("keydown", (event)',
+  )
+  .replace(
+    /addEventListener\("keyup", \(event: KeyboardEvent\)/g,
+    'addEventListener("keyup", (event)',
+  )
   .replace(/const (\w+): ([^=]+) =/g, "const $1 =")
   .replace(/let (\w+): ([^=]+) =/g, "let $1 =")
   .replace(/function (\w+)\(([^)]*)\): [^{]+ \{/g, (_match, name, params) => {

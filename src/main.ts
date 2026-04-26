@@ -35,31 +35,41 @@ interface Cloud {
 
 type GameMode = "ready" | "running" | "paused" | "gameOver";
 
-const canvas = document.querySelector<HTMLCanvasElement>("#game");
-const scoreElement = document.querySelector<HTMLElement>("#score");
-const bestElement = document.querySelector<HTMLElement>("#best");
-const moodElement = document.querySelector<HTMLElement>("#mood");
-const overlay = document.querySelector<HTMLElement>("#overlay");
-const overlayCopy = document.querySelector<HTMLElement>("#overlay-copy");
-const startButton = document.querySelector<HTMLButtonElement>("#start");
+const canvasElement = document.querySelector<HTMLCanvasElement>("#game");
+const scoreElementCandidate = document.querySelector<HTMLElement>("#score");
+const bestElementCandidate = document.querySelector<HTMLElement>("#best");
+const moodElementCandidate = document.querySelector<HTMLElement>("#mood");
+const overlayCandidate = document.querySelector<HTMLElement>("#overlay");
+const overlayCopyCandidate = document.querySelector<HTMLElement>("#overlay-copy");
+const startButtonCandidate = document.querySelector<HTMLButtonElement>("#start");
 
 if (
-  !canvas ||
-  !scoreElement ||
-  !bestElement ||
-  !moodElement ||
-  !overlay ||
-  !overlayCopy ||
-  !startButton
+  !canvasElement ||
+  !scoreElementCandidate ||
+  !bestElementCandidate ||
+  !moodElementCandidate ||
+  !overlayCandidate ||
+  !overlayCopyCandidate ||
+  !startButtonCandidate
 ) {
   throw new Error("Missing game markup");
 }
 
-const ctx = canvas.getContext("2d");
+const canvas: HTMLCanvasElement = canvasElement;
+const scoreElement: HTMLElement = scoreElementCandidate;
+const bestElement: HTMLElement = bestElementCandidate;
+const moodElement: HTMLElement = moodElementCandidate;
+const overlay: HTMLElement = overlayCandidate;
+const overlayCopy: HTMLElement = overlayCopyCandidate;
+const startButton: HTMLButtonElement = startButtonCandidate;
 
-if (!ctx) {
+const renderingContext = canvas.getContext("2d");
+
+if (!renderingContext) {
   throw new Error("Canvas is not supported");
 }
+
+const ctx: CanvasRenderingContext2D = renderingContext;
 
 const world = {
   width: canvas.width,
@@ -73,13 +83,7 @@ const world = {
 const canonHooks = {
   runnerName: "Mommy Ball",
   moods: ["Zooming", "Rolling", "Determined", "Snack-powered", "Majestic"],
-  pickupPhrases: [
-    "plot twist",
-    "deep lore",
-    "canon event",
-    "silly decree",
-    "forbidden snack",
-  ],
+  pickupPhrases: ["plot twist", "deep lore", "canon event", "silly decree", "forbidden snack"],
 };
 
 const runner: Runner = {
@@ -243,8 +247,7 @@ function updateObstacles(delta: number): void {
 
   if (obstacleTimer <= 0) {
     spawnObstacle();
-    obstacleTimer =
-      0.72 + Math.random() * 0.9 - Math.min(0.28, distance / 9000);
+    obstacleTimer = 0.72 + Math.random() * 0.9 - Math.min(0.28, distance / 9000);
   }
 
   for (const obstacle of obstacles) {
@@ -275,8 +278,7 @@ function updatePickups(delta: number): void {
 
 function spawnObstacle(): void {
   const roll = Math.random();
-  const kind: Obstacle["kind"] =
-    roll > 0.72 ? "float" : roll > 0.45 ? "low" : "tower";
+  const kind: Obstacle["kind"] = roll > 0.72 ? "float" : roll > 0.45 ? "low" : "tower";
   const width = kind === "low" ? 78 : 52;
   const height = kind === "float" ? 54 : kind === "low" ? 42 : 92;
   const y = kind === "float" ? world.groundY - 154 : world.groundY - height;
@@ -292,9 +294,7 @@ function spawnObstacle(): void {
 
 function spawnPickup(): void {
   const phrase =
-    canonHooks.pickupPhrases[
-      Math.floor(Math.random() * canonHooks.pickupPhrases.length)
-    ];
+    canonHooks.pickupPhrases[Math.floor(Math.random() * canonHooks.pickupPhrases.length)];
   pickups.push({
     x: world.width + 40,
     y: world.groundY - 138 - Math.random() * 74,
@@ -343,8 +343,7 @@ function endGame(): void {
 function updateMood(delta: number): void {
   moodTimer -= delta;
   if (moodTimer <= 0) {
-    currentMood =
-      canonHooks.moods[Math.floor(distance / 700) % canonHooks.moods.length];
+    currentMood = canonHooks.moods[Math.floor(distance / 700) % canonHooks.moods.length];
     moodTimer = 1;
   }
 }
@@ -485,11 +484,7 @@ function drawRunner(): void {
 function drawObstacles(): void {
   for (const obstacle of obstacles) {
     ctx.fillStyle =
-      obstacle.kind === "float"
-        ? "#7057d2"
-        : obstacle.kind === "low"
-          ? "#f0b84d"
-          : "#d24f45";
+      obstacle.kind === "float" ? "#7057d2" : obstacle.kind === "low" ? "#f0b84d" : "#d24f45";
     ctx.strokeStyle = "#241f18";
     ctx.lineWidth = 4;
     roundRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height, 8);
@@ -527,13 +522,7 @@ function drawPickups(): void {
   }
 }
 
-function roundRect(
-  x: number,
-  y: number,
-  width: number,
-  height: number,
-  radius: number,
-): void {
+function roundRect(x: number, y: number, width: number, height: number, radius: number): void {
   ctx.beginPath();
   ctx.moveTo(x + radius, y);
   ctx.lineTo(x + width - radius, y);
@@ -546,9 +535,7 @@ function roundRect(
   ctx.quadraticCurveTo(x, y, x + radius, y);
 }
 
-function removeOffscreen(
-  items: Array<{ x: number; width?: number; radius?: number }>,
-): void {
+function removeOffscreen(items: Array<{ x: number; width?: number; radius?: number }>): void {
   for (let index = items.length - 1; index >= 0; index -= 1) {
     const item = items[index];
     const padding = item.width ?? item.radius ?? 0;
@@ -562,12 +549,7 @@ function rectsOverlap(
   a: { x: number; y: number; width: number; height: number },
   b: { x: number; y: number; width: number; height: number },
 ): boolean {
-  return (
-    a.x < b.x + b.width &&
-    a.x + a.width > b.x &&
-    a.y < b.y + b.height &&
-    a.y + a.height > b.y
-  );
+  return a.x < b.x + b.width && a.x + a.width > b.x && a.y < b.y + b.height && a.y + a.height > b.y;
 }
 
 function circleRectOverlap(

@@ -5,8 +5,17 @@
   "type": "module",
   "scripts": {
     "build": "node scripts/build.mjs",
+    "format": "biome format --write .",
+    "format:check": "biome format .",
+    "lint": "biome lint .",
+    "lint:fix": "biome lint --write .",
+    "typecheck": "tsc --noEmit",
+    "ci": "node scripts/build.mjs --check && tsc --noEmit && biome ci .",
     "dev": "node scripts/dev-server.mjs",
-    "check": "node scripts/build.mjs --check"
+    "check": "node scripts/build.mjs --check && tsc --noEmit && biome check ."
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "@biomejs/biome": "2.4.13",
+    "typescript": "6.0.3"
+  }
 }

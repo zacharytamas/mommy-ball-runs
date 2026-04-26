@@ -15,6 +15,23 @@ Then open [http://localhost:5173](http://localhost:5173).
 
 The included dev server binds to `127.0.0.1` by default. Set `PORT` or `HOST` if you need a different local address.
 
+## Code Quality
+
+Biome handles formatting and linting:
+
+```sh
+biome format --write .
+biome lint .
+```
+
+Once dependencies are installed, the same checks are available through the package scripts:
+
+```sh
+npm run format
+npm run lint
+npm run check
+```
+
 ## Controls
 
 - Jump: Space, Up, or W

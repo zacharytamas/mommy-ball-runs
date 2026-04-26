@@ -1,20 +1,38 @@
-const canvas = document.querySelector("#game");
-const scoreElement = document.querySelector("#score");
-const bestElement = document.querySelector("#best");
-const moodElement = document.querySelector("#mood");
-const overlay = document.querySelector("#overlay");
-const overlayCopy = document.querySelector("#overlay-copy");
-const startButton = document.querySelector("#start");
+const canvasElement = document.querySelector("#game");
+const scoreElementCandidate = document.querySelector("#score");
+const bestElementCandidate = document.querySelector("#best");
+const moodElementCandidate = document.querySelector("#mood");
+const overlayCandidate = document.querySelector("#overlay");
+const overlayCopyCandidate = document.querySelector("#overlay-copy");
+const startButtonCandidate = document.querySelector("#start");
 
-if (!canvas || !scoreElement || !bestElement || !moodElement || !overlay || !overlayCopy || !startButton) {
+if (
+  !canvasElement ||
+  !scoreElementCandidate ||
+  !bestElementCandidate ||
+  !moodElementCandidate ||
+  !overlayCandidate ||
+  !overlayCopyCandidate ||
+  !startButtonCandidate
+) {
   throw new Error("Missing game markup");
 }
 
-const ctx = canvas.getContext("2d");
+const canvas = canvasElement;
+const scoreElement = scoreElementCandidate;
+const bestElement = bestElementCandidate;
+const moodElement = moodElementCandidate;
+const overlay = overlayCandidate;
+const overlayCopy = overlayCopyCandidate;
+const startButton = startButtonCandidate;
 
-if (!ctx) {
+const renderingContext = canvas.getContext("2d");
+
+if (!renderingContext) {
   throw new Error("Canvas is not supported");
 }
+
+const ctx = renderingContext;
 
 const world = {
   width: canvas.width,
@@ -227,11 +245,19 @@ function spawnObstacle() {
   const width = kind === "low" ? 78 : 52;
   const height = kind === "float" ? 54 : kind === "low" ? 42 : 92;
   const y = kind === "float" ? world.groundY - 154 : world.groundY - height;
-  obstacles.push({ x: world.width + 24, y, width, height, kind, passed: false });
+  obstacles.push({
+    x: world.width + 24,
+    y,
+    width,
+    height,
+    kind,
+    passed: false,
+  });
 }
 
 function spawnPickup() {
-  const phrase = canonHooks.pickupPhrases[Math.floor(Math.random() * canonHooks.pickupPhrases.length)];
+  const phrase =
+    canonHooks.pickupPhrases[Math.floor(Math.random() * canonHooks.pickupPhrases.length)];
   pickups.push({
     x: world.width + 40,
     y: world.groundY - 138 - Math.random() * 74,
@@ -288,7 +314,8 @@ function updateMood(delta) {
 function updateHud() {
   scoreElement.textContent = String(score);
   bestElement.textContent = String(best);
-  moodElement.textContent = mode === "paused" ? "Paused" : mode === "gameOver" ? "Bonked" : currentMood;
+  moodElement.textContent =
+    mode === "paused" ? "Paused" : mode === "gameOver" ? "Bonked" : currentMood;
 }
 
 function draw() {
@@ -419,7 +446,8 @@ function drawRunner() {
 
 function drawObstacles() {
   for (const obstacle of obstacles) {
-    ctx.fillStyle = obstacle.kind === "float" ? "#7057d2" : obstacle.kind === "low" ? "#f0b84d" : "#d24f45";
+    ctx.fillStyle =
+      obstacle.kind === "float" ? "#7057d2" : obstacle.kind === "low" ? "#f0b84d" : "#d24f45";
     ctx.strokeStyle = "#241f18";
     ctx.lineWidth = 4;
     roundRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height, 8);
@@ -474,17 +502,23 @@ function removeOffscreen(items) {
   for (let index = items.length - 1; index >= 0; index -= 1) {
     const item = items[index];
     const padding = item.width ?? item.radius ?? 0;
-    if (item.x + padding < -80 || "collected" in item && item.collected) {
+    if (item.x + padding < -80 || ("collected" in item && item.collected)) {
       items.splice(index, 1);
     }
   }
 }
 
-function rectsOverlap(a, b) {
+function rectsOverlap(
+  a,
+  b,
+) {
   return a.x < b.x + b.width && a.x + a.width > b.x && a.y < b.y + b.height && a.y + a.height > b.y;
 }
 
-function circleRectOverlap(circle, rect) {
+function circleRectOverlap(
+  circle,
+  rect,
+) {
   const closestX = clamp(circle.x, rect.x, rect.x + rect.width);
   const closestY = clamp(circle.y, rect.y, rect.y + rect.height);
   const dx = circle.x - closestX;
