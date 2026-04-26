@@ -13,8 +13,9 @@ import {
   world,
 } from "./game/model";
 
-type SpriteKey = "mommyBall" | "slurpSlurp" | "frank" | "openTheCloset" | "ticket";
+type SpriteKey = "slurpSlurp" | "frank" | "openTheCloset" | "ticket";
 type YudSpriteKey = "yudRed" | "yudBlue" | "yudGreen" | "yudYellow";
+type WalkSpriteKey = "mommyBall" | YudSpriteKey;
 type EnvironmentSpriteKey =
   | "cloudHills"
   | "housePink"
@@ -67,23 +68,38 @@ const startButton: HTMLButtonElement = startButtonCandidate;
 
 const resources = {
   sprites: new ex.ImageSource("/assets/generated/ballseat-sprite-sheet.png"),
+  characterWalk: new ex.ImageSource("/assets/generated/character-walk.png"),
   town: new ex.ImageSource("/assets/generated/ballseat-town-elements.png"),
-  yuds: new ex.ImageSource("/assets/generated/yuds.png"),
 };
 
 const spriteFrames: Record<SpriteKey, SpriteFrame> = {
-  mommyBall: { x: 70, y: 122, width: 385, height: 332 },
   slurpSlurp: { x: 1085, y: 199, width: 334, height: 269 },
   frank: { x: 53, y: 606, width: 423, height: 294 },
   openTheCloset: { x: 552, y: 600, width: 438, height: 320 },
   ticket: { x: 1075, y: 617, width: 421, height: 313 },
 };
 
-const yudFrames: Record<YudSpriteKey, SpriteFrame> = {
-  yudRed: { x: 64, y: 94, width: 522, height: 428 },
-  yudBlue: { x: 683, y: 110, width: 498, height: 424 },
-  yudGreen: { x: 101, y: 668, width: 461, height: 430 },
-  yudYellow: { x: 681, y: 692, width: 444, height: 421 },
+const walkFrames: Record<WalkSpriteKey, [SpriteFrame, SpriteFrame]> = {
+  mommyBall: [
+    { x: 82, y: 76, width: 284, height: 245 },
+    { x: 461, y: 77, width: 262, height: 247 },
+  ],
+  yudRed: [
+    { x: 808, y: 72, width: 284, height: 256 },
+    { x: 1171, y: 73, width: 281, height: 253 },
+  ],
+  yudBlue: [
+    { x: 79, y: 399, width: 280, height: 256 },
+    { x: 431, y: 399, width: 272, height: 255 },
+  ],
+  yudGreen: [
+    { x: 814, y: 403, width: 274, height: 249 },
+    { x: 1170, y: 403, width: 273, height: 251 },
+  ],
+  yudYellow: [
+    { x: 82, y: 704, width: 274, height: 247 },
+    { x: 429, y: 704, width: 272, height: 247 },
+  ],
 };
 
 const environmentFrames: Record<EnvironmentSpriteKey, SpriteFrame> = {
@@ -181,14 +197,14 @@ class RunnerScene extends ex.Scene {
     drawTrackLayer(ctx, this.gameState.distance);
     drawForegroundLane(ctx, this.gameState.distance);
     drawPickups(ctx, this.gameState.pickups);
-    drawObstacles(ctx, this.gameState.obstacles);
-    drawRunner(ctx, this.gameState.runner);
+    drawObstacles(ctx, this.gameState.obstacles, this.gameState.animationTime);
+    drawRunner(ctx, this.gameState.runner, this.gameState.animationTime);
   }
 }
 
 engine.add("runner", new RunnerScene(state));
 
-Promise.all([resources.sprites.load(), resources.town.load(), resources.yuds.load()])
+Promise.all([resources.sprites.load(), resources.characterWalk.load(), resources.town.load()])
   .then(() => engine.start("runner"))
   .then(() => {
     updateHud();
@@ -289,7 +305,7 @@ function drawForegroundLane(ctx: ex.ExcaliburGraphicsContext, distance: number):
   drawRepeatingEnvironment(ctx, "treeSmall", distance, 368, 70, 86, 0.88, 620, 470);
 }
 
-function drawRunner(ctx: ex.ExcaliburGraphicsContext, runner: Runner): void {
+function drawRunner(ctx: ex.ExcaliburGraphicsContext, runner: Runner, animationTime: number): void {
   const cx = runner.x + runner.width / 2;
   const cy = runner.y + runner.height / 2;
   const squash = runner.ducking ? 1.18 : 1;
@@ -299,14 +315,26 @@ function drawRunner(ctx: ex.ExcaliburGraphicsContext, runner: Runner): void {
   ctx.translate(cx, cy);
   ctx.rotate(wobble);
   ctx.scale(squash, 1 / squash);
-  drawSprite(ctx, "mommyBall", -58, -52, 116, 100);
+  drawWalkSprite(ctx, "mommyBall", animationTime, -58, -52, 116, 100);
   ctx.restore();
 }
 
-function drawObstacles(ctx: ex.ExcaliburGraphicsContext, obstacles: Obstacle[]): void {
+function drawObstacles(
+  ctx: ex.ExcaliburGraphicsContext,
+  obstacles: Obstacle[],
+  animationTime: number,
+): void {
   for (const obstacle of obstacles) {
     if (isYudObstacle(obstacle.kind)) {
-      drawYud(ctx, obstacle.kind, obstacle.x - 16, obstacle.y - 17, 102, 86);
+      drawWalkSprite(
+        ctx,
+        obstacle.kind,
+        animationTime + obstacle.x * 0.01,
+        obstacle.x - 16,
+        obstacle.y - 17,
+        102,
+        86,
+      );
     } else if (obstacle.kind === "slurpSlurp") {
       drawSprite(ctx, "slurpSlurp", obstacle.x - 12, obstacle.y - 10, 90, 72);
     } else {
@@ -347,17 +375,19 @@ function drawSprite(
   );
 }
 
-function drawYud(
+function drawWalkSprite(
   ctx: ex.ExcaliburGraphicsContext,
-  sprite: YudSpriteKey,
+  sprite: WalkSpriteKey,
+  animationTime: number,
   x: number,
   y: number,
   width: number,
   height: number,
 ): void {
-  const frame = yudFrames[sprite];
+  const frames = walkFrames[sprite];
+  const frame = frames[Math.floor(animationTime * 8) % frames.length] ?? frames[0];
   ctx.drawImage(
-    resources.yuds.data,
+    resources.characterWalk.data,
     frame.x,
     frame.y,
     frame.width,

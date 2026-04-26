@@ -43,6 +43,14 @@ describe("runner model", () => {
     expect(state.score).toBe(0);
   });
 
+  it("advances walk animation while moving", () => {
+    const state = runningState();
+
+    updateGame(state, 0.5, { horizontal: 1, jumpPressed: false, ducking: false }, () => 0.5);
+
+    expect(state.animationTime).toBe(0.5);
+  });
+
   it("moves Mommy Ball around the play window without leaving it", () => {
     const state = runningState();
 
