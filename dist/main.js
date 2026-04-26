@@ -45,8 +45,21 @@ const world = {
 
 const canonHooks = {
   runnerName: "Mommy Ball",
-  moods: ["Zooming", "Rolling", "Determined", "Snack-powered", "Majestic"],
-  pickupPhrases: ["plot twist", "deep lore", "canon event", "silly decree", "forbidden snack"],
+  moods: [
+    "Ballseat bound",
+    "Train happy",
+    "Castle insurance",
+    "Island daydreaming",
+    "Learning Elementary late",
+  ],
+  pickupPhrases: [
+    "Open the Closet ticket",
+    "Ballseat Island pass",
+    "magic wand charge",
+    "Frank sighting",
+    "Slurp Slurp chorus",
+    "hundred babies roll-call",
+  ],
 };
 
 const runner = {
@@ -241,10 +254,10 @@ function updatePickups(delta) {
 
 function spawnObstacle() {
   const roll = Math.random();
-  const kind = roll > 0.72 ? "float" : roll > 0.45 ? "low" : "tower";
-  const width = kind === "low" ? 78 : 52;
-  const height = kind === "float" ? 54 : kind === "low" ? 42 : 92;
-  const y = kind === "float" ? world.groundY - 154 : world.groundY - height;
+  const kind = roll > 0.7 ? "frank" : roll > 0.34 ? "slurpSlurp" : "goatbox";
+  const width = kind === "goatbox" ? 84 : kind === "slurpSlurp" ? 66 : 48;
+  const height = kind === "goatbox" ? 108 : kind === "slurpSlurp" ? 52 : 44;
+  const y = kind === "frank" ? world.groundY - 142 : world.groundY - height;
   obstacles.push({
     x: world.width + 24,
     y,
@@ -298,7 +311,7 @@ function endGame() {
   localStorage.setItem("mommy-ball-best", String(best));
   bestElement.textContent = String(best);
   overlay.hidden = false;
-  overlayCopy.textContent = `${canonHooks.runnerName} bonked into canon at ${score} points.`;
+  overlayCopy.textContent = `${canonHooks.runnerName} bonked somewhere between Ballseat Town and Ballseat Island at ${score} points.`;
   startButton.textContent = "Run Again";
   updateHud();
 }
@@ -321,6 +334,8 @@ function updateHud() {
 function draw() {
   ctx.clearRect(0, 0, world.width, world.height);
   drawSky();
+  drawBallseatTown();
+  drawOpenTheCloset();
   drawGround();
   drawPickups();
   drawObstacles();
@@ -360,12 +375,166 @@ function drawCloud(cloud) {
 function drawGround() {
   ctx.fillStyle = "#65b96e";
   ctx.fillRect(0, world.groundY, world.width, world.height - world.groundY);
+
+  ctx.fillStyle = "#7c6049";
+  ctx.fillRect(0, world.groundY + 20, world.width, 10);
+  ctx.fillRect(0, world.groundY + 56, world.width, 10);
+  ctx.fillStyle = "#4a3428";
+  for (let x = -((distance * 0.7) % 72); x < world.width; x += 72) {
+    ctx.fillRect(x, world.groundY + 14, 12, 58);
+  }
+
   ctx.fillStyle = "#3d8f50";
   for (let x = -((distance * 0.3) % 56); x < world.width; x += 56) {
-    ctx.fillRect(x, world.groundY + 28, 34, 8);
+    ctx.fillRect(x, world.groundY + 88, 34, 8);
   }
   ctx.fillStyle = "#4a3428";
   ctx.fillRect(0, world.groundY, world.width, 8);
+}
+
+function drawBallseatTown() {
+  const townOffset = -((distance * 0.12) % 680);
+  for (let x = townOffset - 120; x < world.width + 240; x += 680) {
+    drawSchoolhouse(x + 70, world.groundY - 138);
+    drawCastleHouse(x + 278, world.groundY - 126);
+    drawBallseatSign(x + 478, world.groundY - 112);
+  }
+
+  const islandX = world.width - ((distance * 0.06) % (world.width + 420));
+  ctx.fillStyle = "#4fb8a8";
+  ctx.beginPath();
+  ctx.ellipse(islandX + 160, world.groundY - 8, 150, 34, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "#ffcf55";
+  ctx.beginPath();
+  ctx.arc(islandX + 116, world.groundY - 74, 34, Math.PI, 0);
+  ctx.lineTo(islandX + 150, world.groundY - 74);
+  ctx.lineTo(islandX + 82, world.groundY - 74);
+  ctx.fill();
+}
+
+function drawSchoolhouse(x, y) {
+  ctx.fillStyle = "#ffe6a3";
+  ctx.strokeStyle = "#241f18";
+  ctx.lineWidth = 4;
+  roundRect(x, y + 36, 126, 80, 6);
+  ctx.fill();
+  ctx.stroke();
+  ctx.fillStyle = "#f05f3b";
+  ctx.beginPath();
+  ctx.moveTo(x - 8, y + 42);
+  ctx.lineTo(x + 63, y);
+  ctx.lineTo(x + 134, y + 42);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+  ctx.fillStyle = "#85c9f0";
+  ctx.fillRect(x + 18, y + 58, 24, 24);
+  ctx.fillRect(x + 84, y + 58, 24, 24);
+  ctx.fillStyle = "#241f18";
+  ctx.font = "900 11px system-ui";
+  ctx.textAlign = "center";
+  ctx.fillText("LEARNING", x + 63, y + 103);
+}
+
+function drawCastleHouse(x, y) {
+  ctx.fillStyle = "#f6b7d0";
+  ctx.strokeStyle = "#241f18";
+  ctx.lineWidth = 4;
+  roundRect(x, y + 34, 120, 88, 5);
+  ctx.fill();
+  ctx.stroke();
+  for (let tower = 0; tower < 3; tower += 1) {
+    const towerX = x + tower * 42;
+    ctx.fillRect(towerX + 2, y + 14, 34, 34);
+    ctx.strokeRect(towerX + 2, y + 14, 34, 34);
+    ctx.beginPath();
+    ctx.moveTo(towerX - 1, y + 14);
+    ctx.lineTo(towerX + 19, y - 8);
+    ctx.lineTo(towerX + 39, y + 14);
+    ctx.closePath();
+    ctx.fillStyle = "#7057d2";
+    ctx.fill();
+    ctx.stroke();
+  }
+  ctx.fillStyle = "#241f18";
+  ctx.fillRect(x + 48, y + 82, 24, 40);
+}
+
+function drawBallseatSign(x, y) {
+  ctx.strokeStyle = "#241f18";
+  ctx.lineWidth = 5;
+  ctx.fillStyle = "#8bd37b";
+  roundRect(x, y, 150, 58, 8);
+  ctx.fill();
+  ctx.stroke();
+  ctx.fillStyle = "#241f18";
+  ctx.font = "900 18px system-ui";
+  ctx.textAlign = "center";
+  ctx.fillText("BALLSEAT", x + 75, y + 25);
+  ctx.font = "800 12px system-ui";
+  ctx.fillText("TOWN", x + 75, y + 43);
+  ctx.fillRect(x + 28, y + 58, 10, 48);
+  ctx.fillRect(x + 112, y + 58, 10, 48);
+}
+
+function drawOpenTheCloset() {
+  const x = world.width - ((distance * 0.42) % (world.width + 360));
+  const y = world.groundY - 70;
+
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.strokeStyle = "#241f18";
+  ctx.lineWidth = 4;
+
+  ctx.fillStyle = "#f05f3b";
+  roundRect(-34, 36, 246, 32, 6);
+  ctx.fill();
+  ctx.stroke();
+
+  ctx.fillStyle = "#1f9bd3";
+  roundRect(36, 0, 74, 62, 7);
+  ctx.fill();
+  ctx.stroke();
+  roundRect(100, 18, 92, 44, 8);
+  ctx.fill();
+  ctx.stroke();
+  ctx.fillRect(166, -8, 26, 30);
+  ctx.strokeRect(166, -8, 26, 30);
+  ctx.beginPath();
+  ctx.arc(138, 18, 16, Math.PI, 0);
+  ctx.fill();
+  ctx.stroke();
+
+  ctx.fillStyle = "#fffdf8";
+  roundRect(28, -12, 92, 22, 8);
+  ctx.fill();
+  ctx.stroke();
+  ctx.fillStyle = "#83d3f2";
+  roundRect(52, 14, 34, 28, 4);
+  ctx.fill();
+  ctx.stroke();
+
+  ctx.fillStyle = "#8b7765";
+  for (const wheelX of [42, 102, 160]) {
+    ctx.beginPath();
+    ctx.arc(wheelX, 70, 18, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(wheelX, 70, 6, 0, Math.PI * 2);
+    ctx.fillStyle = "#f05f3b";
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = "#8b7765";
+  }
+
+  ctx.fillStyle = "#241f18";
+  ctx.font = "900 10px system-ui";
+  ctx.textAlign = "center";
+  ctx.fillText("OPEN", 73, 29);
+  ctx.fillText("THE CLOSET", 145, 47);
+  ctx.restore();
 }
 
 function drawRunner() {
@@ -446,24 +615,129 @@ function drawRunner() {
 
 function drawObstacles() {
   for (const obstacle of obstacles) {
-    ctx.fillStyle =
-      obstacle.kind === "float" ? "#7057d2" : obstacle.kind === "low" ? "#f0b84d" : "#d24f45";
-    ctx.strokeStyle = "#241f18";
-    ctx.lineWidth = 4;
-    roundRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height, 8);
-    ctx.fill();
-    ctx.stroke();
-
-    ctx.fillStyle = "#241f18";
-    if (obstacle.kind === "float") {
-      ctx.fillRect(obstacle.x + 13, obstacle.y + 18, obstacle.width - 26, 8);
-    } else if (obstacle.kind === "low") {
-      ctx.fillRect(obstacle.x + 10, obstacle.y + 13, obstacle.width - 20, 7);
+    if (obstacle.kind === "goatbox") {
+      drawGoatbox(obstacle);
+    } else if (obstacle.kind === "slurpSlurp") {
+      drawSlurpSlurp(obstacle);
     } else {
-      ctx.fillRect(obstacle.x + 14, obstacle.y + 20, obstacle.width - 28, 10);
-      ctx.fillRect(obstacle.x + 14, obstacle.y + 48, obstacle.width - 28, 10);
+      drawFrank(obstacle);
     }
   }
+}
+
+function drawGoatbox(obstacle) {
+  const { x, y } = obstacle;
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.strokeStyle = "#241f18";
+  ctx.lineWidth = 4;
+
+  ctx.fillStyle = "#fff0a8";
+  ctx.beginPath();
+  ctx.ellipse(47, 18, 34, 24, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.stroke();
+  ctx.fillStyle = "#b4772e";
+  for (const hornX of [30, 58]) {
+    ctx.beginPath();
+    ctx.moveTo(hornX, 0);
+    ctx.quadraticCurveTo(hornX + 4, -24, hornX + 22, -30);
+    ctx.quadraticCurveTo(hornX + 17, -7, hornX + 8, 8);
+    ctx.fill();
+    ctx.stroke();
+  }
+
+  ctx.fillStyle = "#0a82a0";
+  roundRect(10, 34, 64, 58, 7);
+  ctx.fill();
+  ctx.stroke();
+  ctx.fillStyle = "#ef6539";
+  roundRect(24, 54, 42, 18, 5);
+  ctx.fill();
+  ctx.stroke();
+
+  ctx.fillStyle = "#fffdf8";
+  ctx.beginPath();
+  ctx.arc(40, 17, 10, 0, Math.PI * 2);
+  ctx.arc(62, 17, 10, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.stroke();
+  ctx.fillStyle = "#241f18";
+  ctx.beginPath();
+  ctx.arc(42, 18, 4, 0, Math.PI * 2);
+  ctx.arc(64, 18, 4, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(62, 30, 14, 0.15, Math.PI - 0.15);
+  ctx.stroke();
+
+  ctx.fillStyle = "#6d431a";
+  ctx.fillRect(20, 92, 10, 16);
+  ctx.fillRect(56, 92, 10, 16);
+  ctx.restore();
+}
+
+function drawSlurpSlurp(obstacle) {
+  const { x, y, width, height } = obstacle;
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.strokeStyle = "#241f18";
+  ctx.lineWidth = 4;
+  ctx.fillStyle = "#8d6b3f";
+  ctx.beginPath();
+  ctx.ellipse(width / 2, height - 10, width / 2 - 4, height / 2 - 4, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.stroke();
+  ctx.fillStyle = "#fffdf8";
+  ctx.beginPath();
+  ctx.arc(22, 12, 10, 0, Math.PI * 2);
+  ctx.arc(44, 12, 10, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.stroke();
+  ctx.fillStyle = "#241f18";
+  ctx.beginPath();
+  ctx.arc(24, 13, 4, 0, Math.PI * 2);
+  ctx.arc(42, 13, 4, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = "#ef6539";
+  ctx.lineWidth = 5;
+  ctx.beginPath();
+  ctx.moveTo(22, 34);
+  ctx.quadraticCurveTo(34, 46, 52, 32);
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawFrank(obstacle) {
+  const { x, y } = obstacle;
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.strokeStyle = "#241f18";
+  ctx.lineWidth = 4;
+  ctx.fillStyle = "#d24f45";
+  ctx.beginPath();
+  ctx.ellipse(24, 22, 22, 18, 0.18, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(24, 5);
+  ctx.lineTo(24, 39);
+  ctx.stroke();
+  ctx.fillStyle = "#241f18";
+  for (const spot of [
+    [14, 18],
+    [32, 16],
+    [20, 28],
+    [36, 29],
+  ]) {
+    ctx.beginPath();
+    ctx.arc(spot[0], spot[1], 4, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.beginPath();
+  ctx.arc(44, 17, 8, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
 }
 
 function drawPickups() {

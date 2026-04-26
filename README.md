@@ -47,3 +47,5 @@ Start with `canonHooks` in `src/main.ts`. It currently controls the runner name,
 - Multiple runners with different jump arcs
 - Chapter-style biomes
 - Collectible lore snippets between runs
+
+The current build pulls visual direction from `references/`: Ballseat Town scenery, the blue-and-red Open the Closet train, Goatbox, Slurp Slurp frogs, and Frank ladybugs are all drawn directly in canvas with flat shapes and heavy outlines.
