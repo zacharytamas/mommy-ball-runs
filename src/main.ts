@@ -75,7 +75,8 @@ const ctx: CanvasRenderingContext2D = renderingContext;
 const world = {
   width: canvas.width,
   height: canvas.height,
-  groundY: 416,
+  groundY: 468,
+  trainY: 346,
   gravity: 2200,
   jumpVelocity: -820,
   baseSpeed: 360,
@@ -395,9 +396,8 @@ function drawBackground(): void {
 
 function drawOpenTheCloset(): void {
   const x = world.width - ((distance * 0.42) % (world.width + 360));
-  const y = world.groundY - 70;
 
-  drawSprite("openTheCloset", x - 8, y - 78, 210, 154);
+  drawSprite("openTheCloset", x - 8, world.trainY - 78, 210, 154);
 }
 
 function drawRunner(): void {
