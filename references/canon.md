@@ -13,6 +13,7 @@
 - Duke: a comically large Newfoundland dog that loves to hang out with the balls and ride Open the Closet. (He is from The Secret Life of Pets movie). You don’t have to mention his breed but if drawing pictures it is important. 
 - Fishy Ball: an orange and yellow (linear gradient) ball that is covered in fish scales.
 - Goatbox: A mischievous goat that has a mailbox for a torso. It was previously a mailbox but Mommy Ball had a magic wand one day and turned it into a goat and then back into a mailbox but it didn't completely change back.
+- The Yuds: mischievous ball troublemakers. Red Yud is their leader and is especially mischievous. There are also blue, green, and yellow Yuds.
 
 Locations:
 - All of these characters live in a universe called The Balls' Life in a town called Ballseat Town. 

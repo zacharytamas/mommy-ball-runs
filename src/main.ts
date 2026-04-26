@@ -13,7 +13,8 @@ import {
   world,
 } from "./game/model";
 
-type SpriteKey = "mommyBall" | "goatbox" | "slurpSlurp" | "frank" | "openTheCloset" | "ticket";
+type SpriteKey = "mommyBall" | "slurpSlurp" | "frank" | "openTheCloset" | "ticket";
+type YudSpriteKey = "yudRed" | "yudBlue" | "yudGreen" | "yudYellow";
 type EnvironmentSpriteKey =
   | "cloudHills"
   | "housePink"
@@ -67,15 +68,22 @@ const startButton: HTMLButtonElement = startButtonCandidate;
 const resources = {
   sprites: new ex.ImageSource("/assets/generated/ballseat-sprite-sheet.png"),
   town: new ex.ImageSource("/assets/generated/ballseat-town-elements.png"),
+  yuds: new ex.ImageSource("/assets/generated/yuds.png"),
 };
 
 const spriteFrames: Record<SpriteKey, SpriteFrame> = {
   mommyBall: { x: 70, y: 122, width: 385, height: 332 },
-  goatbox: { x: 580, y: 45, width: 340, height: 437 },
   slurpSlurp: { x: 1085, y: 199, width: 334, height: 269 },
   frank: { x: 53, y: 606, width: 423, height: 294 },
   openTheCloset: { x: 552, y: 600, width: 438, height: 320 },
   ticket: { x: 1075, y: 617, width: 421, height: 313 },
+};
+
+const yudFrames: Record<YudSpriteKey, SpriteFrame> = {
+  yudRed: { x: 64, y: 94, width: 522, height: 428 },
+  yudBlue: { x: 683, y: 110, width: 498, height: 424 },
+  yudGreen: { x: 101, y: 668, width: 461, height: 430 },
+  yudYellow: { x: 681, y: 692, width: 444, height: 421 },
 };
 
 const environmentFrames: Record<EnvironmentSpriteKey, SpriteFrame> = {
@@ -180,7 +188,7 @@ class RunnerScene extends ex.Scene {
 
 engine.add("runner", new RunnerScene(state));
 
-Promise.all([resources.sprites.load(), resources.town.load()])
+Promise.all([resources.sprites.load(), resources.town.load(), resources.yuds.load()])
   .then(() => engine.start("runner"))
   .then(() => {
     updateHud();
@@ -297,14 +305,18 @@ function drawRunner(ctx: ex.ExcaliburGraphicsContext, runner: Runner): void {
 
 function drawObstacles(ctx: ex.ExcaliburGraphicsContext, obstacles: Obstacle[]): void {
   for (const obstacle of obstacles) {
-    if (obstacle.kind === "goatbox") {
-      drawSprite(ctx, "goatbox", obstacle.x - 8, obstacle.y - 18, 100, 128);
+    if (isYudObstacle(obstacle.kind)) {
+      drawYud(ctx, obstacle.kind, obstacle.x - 16, obstacle.y - 17, 102, 86);
     } else if (obstacle.kind === "slurpSlurp") {
       drawSprite(ctx, "slurpSlurp", obstacle.x - 12, obstacle.y - 10, 90, 72);
     } else {
       drawSprite(ctx, "frank", obstacle.x - 10, obstacle.y - 10, 86, 60);
     }
   }
+}
+
+function isYudObstacle(kind: Obstacle["kind"]): kind is YudSpriteKey {
+  return kind === "yudRed" || kind === "yudBlue" || kind === "yudGreen" || kind === "yudYellow";
 }
 
 function drawPickups(ctx: ex.ExcaliburGraphicsContext, pickups: Pickup[]): void {
@@ -324,6 +336,28 @@ function drawSprite(
   const frame = spriteFrames[sprite];
   ctx.drawImage(
     resources.sprites.data,
+    frame.x,
+    frame.y,
+    frame.width,
+    frame.height,
+    x,
+    y,
+    width,
+    height,
+  );
+}
+
+function drawYud(
+  ctx: ex.ExcaliburGraphicsContext,
+  sprite: YudSpriteKey,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+): void {
+  const frame = yudFrames[sprite];
+  ctx.drawImage(
+    resources.yuds.data,
     frame.x,
     frame.y,
     frame.width,

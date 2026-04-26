@@ -75,6 +75,16 @@ describe("runner model", () => {
     expect(state.obstacles[0]?.passed).toBe(true);
   });
 
+  it("spawns Yuds where Goatbox used to appear", () => {
+    const state = runningState();
+    state.obstacleTimer = 0;
+
+    updateGame(state, 0.016, { horizontal: 1, jumpPressed: false, ducking: false }, () => 0.05);
+
+    expect(state.obstacles[0]?.kind).toBe("yudRed");
+    expect(state.obstacles[0]?.height).toBe(66);
+  });
+
   it("collects a pickup and promotes its phrase into the mood", () => {
     const state = runningState();
     state.pickups.push({
@@ -111,12 +121,12 @@ describe("runner model", () => {
   });
 
   it("forgives transparent sprite padding around obstacles", () => {
-    const goatbox = obstacleHitbox({
+    const yud = obstacleHitbox({
       x: 300,
-      y: world.groundY - 108,
-      width: 84,
-      height: 108,
-      kind: "goatbox",
+      y: world.groundY - 66,
+      width: 70,
+      height: 66,
+      kind: "yudRed",
       passed: false,
     });
     const frank = obstacleHitbox({
@@ -128,9 +138,9 @@ describe("runner model", () => {
       passed: false,
     });
 
-    expect(goatbox.x).toBe(318);
-    expect(goatbox.width).toBe(48);
-    expect(goatbox.height).toBe(76);
+    expect(yud.x).toBe(312);
+    expect(yud.width).toBe(46);
+    expect(yud.height).toBe(44);
     expect(frank.x).toBe(314);
     expect(frank.width).toBe(38);
     expect(frank.height).toBe(26);

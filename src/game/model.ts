@@ -14,7 +14,7 @@ export interface Obstacle {
   y: number;
   width: number;
   height: number;
-  kind: "goatbox" | "slurpSlurp" | "frank";
+  kind: "yudRed" | "yudBlue" | "yudGreen" | "yudYellow" | "slurpSlurp" | "frank";
   passed: boolean;
 }
 
@@ -287,9 +287,9 @@ function updatePickups(state: GameState, delta: number, random: () => number): v
 }
 
 function createObstacle(roll: number): Obstacle {
-  const kind: Obstacle["kind"] = roll > 0.7 ? "frank" : roll > 0.34 ? "slurpSlurp" : "goatbox";
-  const width = kind === "goatbox" ? 84 : 66;
-  const height = kind === "goatbox" ? 108 : kind === "slurpSlurp" ? 52 : 46;
+  const kind: Obstacle["kind"] = roll > 0.7 ? "frank" : roll > 0.34 ? "slurpSlurp" : yudKind(roll);
+  const width = isYud(kind) ? 70 : 66;
+  const height = isYud(kind) ? 66 : kind === "slurpSlurp" ? 52 : 46;
   const y = kind === "frank" ? world.groundY - 142 : world.groundY - height;
   return {
     x: world.width + 24,
@@ -299,6 +299,17 @@ function createObstacle(roll: number): Obstacle {
     kind,
     passed: false,
   };
+}
+
+function yudKind(roll: number): Obstacle["kind"] {
+  if (roll < 0.08) return "yudRed";
+  if (roll < 0.17) return "yudBlue";
+  if (roll < 0.26) return "yudGreen";
+  return "yudYellow";
+}
+
+function isYud(kind: Obstacle["kind"]): boolean {
+  return kind === "yudRed" || kind === "yudBlue" || kind === "yudGreen" || kind === "yudYellow";
 }
 
 function createPickup(random: () => number, seed: number): Pickup {
@@ -368,7 +379,10 @@ const obstacleHitboxInsets: Record<
   Obstacle["kind"],
   { top: number; right: number; bottom: number; left: number }
 > = {
-  goatbox: { top: 16, right: 18, bottom: 16, left: 18 },
+  yudRed: { top: 10, right: 12, bottom: 12, left: 12 },
+  yudBlue: { top: 10, right: 12, bottom: 12, left: 12 },
+  yudGreen: { top: 10, right: 12, bottom: 12, left: 12 },
+  yudYellow: { top: 10, right: 12, bottom: 12, left: 12 },
   slurpSlurp: { top: 12, right: 14, bottom: 10, left: 14 },
   frank: { top: 10, right: 14, bottom: 10, left: 14 },
 };

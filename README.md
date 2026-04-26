@@ -2,7 +2,7 @@
 
 A silly browser-based TypeScript side-scroller set in Ballseat Town, an extremely serious literary universe created by children.
 
-Mommy Ball scoots through the Ballseat Town foreground, collects tickets, and dodges canon-accurate trouble from Goatbox, Slurp Slurp, and Frank.
+Mommy Ball scoots through the Ballseat Town foreground, collects tickets, and dodges canon-accurate trouble from the Yuds, Slurp Slurp, and Frank.
 
 ## Run It
 
@@ -42,6 +42,7 @@ bun run check
 - `src/game/model.ts` contains test-covered runner state, physics, spawning, scoring, and collision rules.
 - `src/styles.css` controls the page layout around the game window.
 - `assets/generated/ballseat-sprite-sheet.png` contains generated gameplay sprites.
+- `assets/generated/yuds.png` contains generated Yud obstacle sprites.
 - `assets/generated/ballseat-town-elements.png` contains generated Ballseat Town scenery elements for parallax background layers.
 - `references/` contains canon notes and visual references used to create generated assets.
 
@@ -49,9 +50,11 @@ bun run check
 
 The game uses generated raster art for the main visual pieces instead of hand-drawn canvas approximations:
 
-- Mommy Ball, Open the Closet, Goatbox, Slurp Slurp, Frank, and ticket pickups are cropped from `assets/generated/ballseat-sprite-sheet.png`.
+- Mommy Ball, Open the Closet, Slurp Slurp, Frank, and ticket pickups are cropped from `assets/generated/ballseat-sprite-sheet.png`.
+- Red, blue, green, and yellow Yuds are cropped from `assets/generated/yuds.png`.
 - Houses, trees, shrubs, tracks, signs, and hills are cropped from `assets/generated/ballseat-town-elements.png` and composed as separate parallax layers.
 - `assets/generated/ballseat-sprite-sheet-magenta.png` is the original chroma-key source for the sprite sheet.
+- `assets/generated/yuds-source.png` is the original chroma-key source for the Yuds sheet.
 
 When adding new Ballseat canon, update `references/canon.md` first. For new visual subjects, generate or edit raster assets from the references, save the final project-bound files under `assets/generated/`, then wire them into `src/main.ts` as sprite frames, background layers, or future level configs.
 
