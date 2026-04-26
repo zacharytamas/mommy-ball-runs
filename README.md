@@ -38,8 +38,11 @@ bun run check
 ## Project Shape
 
 - `index.html` defines the game shell and loads `/src/main.ts`.
-- `src/main.ts` boots Excalibur, manages the runner scene, and renders the current Ballseat Town level.
+- `src/main.ts` boots Excalibur and connects the DOM, HUD, persistence, and scene lifecycle.
+- `src/game/runner-scene.ts` owns the Excalibur scene hooks, keyboard input mapping, update loop, and draw call.
 - `src/game/model.ts` contains test-covered runner state, physics, spawning, scoring, and collision rules.
+- `src/game/rendering.ts` composes the current Ballseat Town level from sprites, parallax scenery, obstacles, pickups, and the runner.
+- `src/game/assets.ts` catalogs image resources and sprite-sheet crop frames.
 - `src/styles.css` controls the page layout around the game window.
 - `assets/generated/ballseat-sprite-sheet.png` contains generated gameplay sprites.
 - `assets/generated/character-walk.png` contains generated two-frame walking sprites for Mommy Ball and the Yuds.
@@ -58,7 +61,7 @@ The game uses generated raster art for the main visual pieces instead of hand-dr
 - `assets/generated/yuds-source.png` is the original chroma-key source for the Yuds sheet.
 - `assets/generated/character-walk-source.png` is the original chroma-key source for the walking animation sheet.
 
-When adding new Ballseat canon, update `references/canon.md` first. For new visual subjects, generate or edit raster assets from the references, save the final project-bound files under `assets/generated/`, then wire them into `src/main.ts` as sprite frames, background layers, or future level configs.
+When adding new Ballseat canon, update `references/canon.md` first. For new visual subjects, generate or edit raster assets from the references, save the final project-bound files under `assets/generated/`, then wire them into `src/game/assets.ts` as sprite frames, background layers, or future level configs.
 
 Small gameplay text such as moods and pickup phrases currently lives in `canonHooks` in `src/game/model.ts`.
 
