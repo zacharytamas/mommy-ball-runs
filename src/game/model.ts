@@ -42,7 +42,8 @@ export interface GameState {
   distance: number;
   furthestDistance: number;
   speed: number;
-  animationTime: number;
+  runnerAnimationTime: number;
+  obstacleAnimationTime: number;
   obstacleTimer: number;
   pickupTimer: number;
   moodTimer: number;
@@ -94,7 +95,8 @@ export function createGameState(best = 0): GameState {
     distance: 0,
     furthestDistance: 0,
     speed: 0,
-    animationTime: 0,
+    runnerAnimationTime: 0,
+    obstacleAnimationTime: 0,
     obstacleTimer: 0,
     pickupTimer: 0,
     moodTimer: 0,
@@ -112,7 +114,8 @@ export function resetGame(state: GameState): void {
   state.distance = 0;
   state.furthestDistance = 0;
   state.speed = 0;
-  state.animationTime = 0;
+  state.runnerAnimationTime = 0;
+  state.obstacleAnimationTime = 0;
   state.obstacleTimer = 0.85;
   state.pickupTimer = 1.35;
   state.moodTimer = 0;
@@ -135,8 +138,9 @@ export function updateGame(
   if (state.mode !== "running") return;
 
   updateCamera(state, delta, input.horizontal);
+  state.obstacleAnimationTime += delta;
   if (input.horizontal !== 0 || !state.runner.grounded) {
-    state.animationTime += delta;
+    state.runnerAnimationTime += delta;
   }
   state.score = Math.floor(state.furthestDistance / 10) + state.bonusScore;
 

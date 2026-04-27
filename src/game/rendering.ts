@@ -18,8 +18,8 @@ export function drawWorld(ctx: ex.ExcaliburGraphicsContext, state: GameState): v
   drawTrackLayer(ctx, state.distance);
   drawForegroundLane(ctx, state.distance);
   drawPickups(ctx, state.pickups);
-  drawObstacles(ctx, state.obstacles, state.animationTime);
-  drawRunner(ctx, state.runner, state.animationTime);
+  drawObstacles(ctx, state.obstacles, state.obstacleAnimationTime);
+  drawRunner(ctx, state.runner, state.runnerAnimationTime);
 }
 
 function drawBackground(ctx: ex.ExcaliburGraphicsContext, distance: number): void {

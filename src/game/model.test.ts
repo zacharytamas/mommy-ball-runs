@@ -48,7 +48,17 @@ describe("runner model", () => {
 
     updateGame(state, 0.5, { horizontal: 1, jumpPressed: false, ducking: false }, () => 0.5);
 
-    expect(state.animationTime).toBe(0.5);
+    expect(state.runnerAnimationTime).toBe(0.5);
+    expect(state.obstacleAnimationTime).toBe(0.5);
+  });
+
+  it("keeps obstacle animations running while Mommy Ball is idle", () => {
+    const state = runningState();
+
+    updateGame(state, 0.5, { horizontal: 0, jumpPressed: false, ducking: false }, () => 0.5);
+
+    expect(state.runnerAnimationTime).toBe(0);
+    expect(state.obstacleAnimationTime).toBe(0.5);
   });
 
   it("moves Mommy Ball around the play window without leaving it", () => {
