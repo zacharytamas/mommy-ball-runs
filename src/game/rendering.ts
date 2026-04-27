@@ -85,7 +85,7 @@ function drawRunner(ctx: ex.ExcaliburGraphicsContext, runner: Runner, animationT
   ctx.save();
   ctx.translate(cx, cy);
   ctx.rotate(wobble);
-  ctx.scale(squash, 1 / squash);
+  ctx.scale(squash * runner.facing, 1 / squash);
   drawWalkSprite(ctx, "mommyBall", animationTime, -58, -52, 116, 100);
   ctx.restore();
 }

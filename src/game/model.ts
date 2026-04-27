@@ -4,6 +4,7 @@ export interface Runner {
   width: number;
   height: number;
   vy: number;
+  facing: -1 | 1;
   grounded: boolean;
   ducking: boolean;
   wobble: number;
@@ -206,6 +207,7 @@ function createRunner(): Runner {
     width: 76,
     height: 86,
     vy: 0,
+    facing: 1,
     grounded: true,
     ducking: false,
     wobble: 0,
@@ -223,6 +225,10 @@ function updateCamera(state: GameState, delta: number, horizontal: GameInput["ho
 }
 
 function updateRunner(runner: Runner, delta: number, input: GameInput): void {
+  if (input.horizontal !== 0) {
+    runner.facing = input.horizontal;
+  }
+
   runner.x = clamp(
     runner.x + input.horizontal * world.runnerMoveSpeed * delta,
     world.runnerMinX,

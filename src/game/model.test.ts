@@ -71,6 +71,19 @@ describe("runner model", () => {
     expect(state.runner.x).toBe(world.runnerMaxX);
   });
 
+  it("faces Mommy Ball in the last horizontal movement direction", () => {
+    const state = runningState();
+
+    updateGame(state, 0.1, { horizontal: -1, jumpPressed: false, ducking: false }, () => 0.5);
+    expect(state.runner.facing).toBe(-1);
+
+    updateGame(state, 0.1, { horizontal: 0, jumpPressed: false, ducking: false }, () => 0.5);
+    expect(state.runner.facing).toBe(-1);
+
+    updateGame(state, 0.1, { horizontal: 1, jumpPressed: false, ducking: false }, () => 0.5);
+    expect(state.runner.facing).toBe(1);
+  });
+
   it("keeps most of the window ahead of Mommy Ball at the forward edge", () => {
     expect(world.width - (world.runnerMaxX + 76)).toBeGreaterThanOrEqual(560);
   });
