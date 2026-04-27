@@ -385,10 +385,10 @@ const obstacleHitboxInsets: Record<
   Obstacle["kind"],
   { top: number; right: number; bottom: number; left: number }
 > = {
-  yudRed: { top: 10, right: 12, bottom: 12, left: 12 },
-  yudBlue: { top: 10, right: 12, bottom: 12, left: 12 },
-  yudGreen: { top: 10, right: 12, bottom: 12, left: 12 },
-  yudYellow: { top: 10, right: 12, bottom: 12, left: 12 },
+  yudRed: { top: 24, right: 20, bottom: 14, left: 20 },
+  yudBlue: { top: 24, right: 20, bottom: 14, left: 20 },
+  yudGreen: { top: 24, right: 20, bottom: 14, left: 20 },
+  yudYellow: { top: 24, right: 20, bottom: 14, left: 20 },
   slurpSlurp: { top: 12, right: 14, bottom: 10, left: 14 },
   frank: { top: 10, right: 14, bottom: 10, left: 14 },
 };

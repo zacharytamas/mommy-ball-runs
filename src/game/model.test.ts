@@ -146,12 +146,26 @@ describe("runner model", () => {
       passed: false,
     });
 
-    expect(yud.x).toBe(312);
-    expect(yud.width).toBe(46);
-    expect(yud.height).toBe(44);
+    expect(yud.x).toBe(320);
+    expect(yud.y).toBe(world.groundY - 42);
+    expect(yud.width).toBe(30);
+    expect(yud.height).toBe(28);
     expect(frank.x).toBe(314);
     expect(frank.width).toBe(38);
     expect(frank.height).toBe(26);
+  });
+
+  it("forgives Mommy Ball clearing the top edge of a Yud during a jump", () => {
+    const yud = obstacleHitbox({
+      x: 220,
+      y: world.groundY - 66,
+      width: 70,
+      height: 66,
+      kind: "yudRed",
+      passed: false,
+    });
+
+    expect(rectsOverlap({ x: 224, y: yud.y - 60, width: 52, height: 58 }, yud)).toBe(false);
   });
 
   it("does not end the run for a near miss inside obstacle sprite padding", () => {
