@@ -255,7 +255,11 @@ function updateRunner(runner: Runner, delta: number, input: GameInput): void {
     runner.grounded = true;
   }
 
-  runner.wobble += delta * (runner.grounded ? 10 : 5);
+  if (input.horizontal !== 0 || !runner.grounded) {
+    runner.wobble += delta * (runner.grounded ? 10 : 5);
+  } else {
+    runner.wobble = 0;
+  }
 }
 
 function updateObstacles(state: GameState, delta: number, random: () => number): void {
